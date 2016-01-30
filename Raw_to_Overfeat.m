@@ -22,7 +22,7 @@ CellPatchIdx=0;
 %%%%% loop through each frame %%%%%
 for i=1:1:numFrame
     if(i>1)
-        idMap0=idMat;
+        idMap0=idMap;
         cellFrame0=cellFrame;
         segFrame0=segFrame;
     end
