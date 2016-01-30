@@ -21,6 +21,7 @@ CellPatchIdx=0;
 
 %%%%% loop through each frame %%%%%
 for i=1:1:numFrame
+    disp(i)
     if(i>1)
         idMap0=idMap;
         cellFrame0=cellFrame;
@@ -77,9 +78,8 @@ for i=1:1:numFrame
         str=sprintf('../data/%s/%s/%02d_SEG_PATCH/%06d.tif',cellName,dataset,sq,SegPatchIdx);
         imwrite(rgb,str);
         
-        tmpCell=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
+        segFrame{k}=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
             'child',[],'Centroid',stat.Centroid);
-        segFrame=cat(2,segFrame,tmpCell);
         clear tmpCell stat tmp im_region mask
         
         %%% update the ground truth information
