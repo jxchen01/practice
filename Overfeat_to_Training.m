@@ -25,7 +25,7 @@ for i=2:1:numFrame
         cellBlock{j}=cellBlock{j+1};
     end
 
-    str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,i);
+    str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,offset+seqLength);
     S=load(str);
     cellBlock{seqLength}=S.cellFrame0;
 
@@ -53,7 +53,7 @@ for i=2:1:numFrame
             end
             
             if(flag>0)
-                str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d.tif.features',cellName,dataset,sq,seqLength+offset);
+                str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,seqLength+offset,j);
                 M=dlmread(str,'');
                 Mat=zeros(seqLength,M(1,1)+5);
                 Mat(seqLength,1:M(1,1))=M(2,1:M(1,1));
@@ -67,7 +67,7 @@ for i=2:1:numFrame
                             'MajorAxisLength','MinorAxisLength','Orientation');
                         topo2=[stat(1).Area,stat(1).MajorAxisLength,stat(1).MinorAxisLength,stat(1).Orientation];
                         
-                        str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d.tif.features',cellName,dataset,sq,t+offset);
+                        str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%03d/%03d.tif.features',cellName,dataset,sq,t+offset,cellid);
                         M=dlmread(str,'');
                         Mat(t,1:M(1,1))=M(2,1:M(1,1));
                         Mat(t,end-5:end-2)=topo2(:);
