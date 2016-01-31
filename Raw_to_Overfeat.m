@@ -1,10 +1,10 @@
 cellName='N2DL-HeLa';
 dataset='train';
 sq=2;
-numFrame=92;
-patchSize=81;
+numFrame=4;
+patchSize=101;
 halfPatch=(patchSize-1)/2+1;
-bdThreshold=10;
+bdThreshold=25;
 
 overFeatSize=231;
 se=strel('disk',5,0);
@@ -15,11 +15,11 @@ str=sprintf('../data/%s/%s/%02d/t%02d.tif',cellName,dataset,sq,0);
 I=mat2gray(imread(str));
 [dimx,dimy]=size(I);
 
-bdTemp=ones(dimx,dimy);
-bdTemp(1:bdThreshold,:)=0;
-bdTemp(:,1:bdThreshold)=0;
-bdTemp(end-bdThreshold+1:end,:)=0;
-bdTemp(:,end-bdThreshold+1:end)=0;
+bdTemp=true(dimx,dimy);
+bdTemp(1:bdThreshold,:)=false;
+bdTemp(:,1:bdThreshold)=false;
+bdTemp(end-bdThreshold+1:end,:)=false;
+bdTemp(:,end-bdThreshold+1:end)=false;
 
 SegPatchIdx=0;
 CellPatchIdx=0;
@@ -67,8 +67,8 @@ for i=1:1:numFrame
         sc=ismember(labmat,k);
         idx=unique(nonzeros(track_lab(sc)));
         
-        checkTemp=sc(bdTemp>0);
-        if(numel(idx)==0 && ~any(checkTemp))
+        checkTemp=sc & bdTemp;
+        if(numel(idx)==0 && ~any(checkTemp(:)))
             continue;
         end
         
@@ -98,7 +98,7 @@ for i=1:1:numFrame
         %%% update the ground truth information
         if(numel(idx)==1)
             %%%%% true positive %%%% 
-            CellPathIdx = CellPatchIdx+1;
+            CellPatchIdx = CellPatchIdx+1;
             str=sprintf('../data/%s/%s/%02d_CELL_PATCH/%06d.tif',cellName,dataset,sq,CellPatchIdx);
             imwrite(rgb,str);
             
@@ -226,7 +226,7 @@ for i=1:1:numFrame
             clear I_mod L scs nidx 
         end
     end
-    
+  
     if(i>1)
         for j=1:1:numel(cellFrame)
             cid=cellFrame{j}.id;
