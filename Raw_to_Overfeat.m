@@ -1,7 +1,7 @@
 cellName='N2DL-HeLa';
 dataset='train';
 sq=2;
-numFrame=92;
+numFrame=2;
 patchSize=101;
 halfPatch=(patchSize-1)/2+1;
 bdThreshold=25;
@@ -21,13 +21,25 @@ bdTemp(:,1:bdThreshold)=false;
 bdTemp(end-bdThreshold+1:end,:)=false;
 bdTemp(:,end-bdThreshold+1:end)=false;
 
-SegPatchIdx=0;
-CellPatchIdx=0;
-
 
 %%%%% loop through each frame %%%%%
 for i=1:1:numFrame
     disp(i)
+    
+    CellPatchIdx=0;
+    str1=sprintf('../data/%s/%s/%02d_CELL_PATCH/%02d',cellName,dataset,sq,i);
+    if(~exist(str1,'dir'))
+        mkdir(str1);
+    end
+    
+    SegPatchIdx=0;
+    str2=sprintf('../data/%s/%s/%02d_SEG_PATCH/%02d',cellName,dataset,sq,i);
+    if(~exist(str2,'dir'))
+        mkdir(str2);
+    end
+    
+    
+
     if(i>1)
         idMap0=idMap;
         cellFrame0=cellFrame;
@@ -88,7 +100,7 @@ for i=1:1:numFrame
         
         SegPatchIdx=SegPatchIdx+1;
         rgb=cat(3,tmp,tmp,tmp);
-        str=sprintf('../data/%s/%s/%02d_SEG_PATCH/%06d.tif',cellName,dataset,sq,SegPatchIdx);
+        str=sprintf('%s/%03d.tif',str2,SegPatchIdx);
         imwrite(rgb,str);
         
         segFrame{k}=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
@@ -99,7 +111,7 @@ for i=1:1:numFrame
         if(numel(idx)==1)
             %%%%% true positive %%%% 
             CellPatchIdx = CellPatchIdx+1;
-            str=sprintf('../data/%s/%s/%02d_CELL_PATCH/%06d.tif',cellName,dataset,sq,CellPatchIdx);
+            str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
             imwrite(rgb,str);
             
             tmpCell = struct('seg',sc,'id',idx,'patch',CellPatchIdx,'parent',[],...
@@ -162,8 +174,7 @@ for i=1:1:numFrame
                         
                         CellPatchIdx=CellPatchIdx+1;
                         rgb=cat(3,tmp,tmp,tmp);
-                        str=sprintf('../data/%s/%s/%02d_CELL_PATCH/%06d.tif',...
-                            cellName,dataset,sq,CellPatchIdx);
+                        str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
                         imwrite(rgb,str);
         
                         tmpCell=struct('seg',scs,'id',nidx,'patch',CellPatchIdx,...
@@ -210,8 +221,7 @@ for i=1:1:numFrame
                         
                         CellPatchIdx = CellPatchIdx +1;
                         rgb=cat(3,tmp,tmp,tmp);
-                        str=sprintf('../data/%s/%s/%02d_CELL_PATCH/%06d.tif',...
-                            cellName,dataset,sq,CellPatchIdx);
+                        str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
                         imwrite(rgb,str);
                         
                         tmpCell=struct('seg',scs,'id',nidx,'patch',CellPatchIdx,...
