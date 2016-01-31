@@ -35,7 +35,14 @@ for i=1:1:numFrame
     
     %%% load tracking ground truth %%%
     str=sprintf('../data/%s/%s/%02d_GT/TRA/man_track%02d.tif',cellName,dataset,sq,i-1);
-    track_lab=imread(str);
+    track_lab_raw=imread(str);
+    track_lab=zeros(dimx,dimy);
+    track_id = unique(nonzeros(track_lab_raw));
+    for k=1:1:numel(track_id)
+        tid=track_id(k);
+        rgIdx=find(track_lab_raw==tid);
+        track_lab(rgIdx(1))=tid;
+    end
     
     %%% load segmentation result %%%
     str=sprintf('../data/%s/%s/%02d_SEG/%d.tif',cellName,dataset,sq,i);
@@ -55,7 +62,7 @@ for i=1:1:numFrame
     segFrame=cell(1,cc.NumObjects);
     cellFrame=cell(1,0);
     idMap=[];
-    for k=1:1:cc.NumObjects
+    for k=1:1:cc.NumObjects      
         sc=ismember(labmat,k);
         idx=unique(nonzeros(track_lab(sc)));
         
@@ -80,13 +87,20 @@ for i=1:1:numFrame
         
         segFrame{k}=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
             'child',[],'Centroid',stat.Centroid);
-        clear tmpCell stat tmp im_region mask
+        
         
         %%% update the ground truth information
         if(numel(idx)==1)
-            %%%%% true positive %%%%       
-            cellFrame=cat(2,cellFrame,segFrame{k});
+            %%%%% true positive %%%% 
+            CellPathIdx = CellPatchIdx+1;
+            str=sprintf('../data/%s/%s/%02d_CELL_PATCH/%06d.tif',cellName,dataset,sq,CellPatchIdx);
+            imwrite(rgb,str);
+            
+            tmpCell = struct('seg',sc,'id',idx,'patch',CellPatchIdx,'parent',[],...
+                'child',[],'Centroid',stat.Centroid);
+            cellFrame=cat(2,cellFrame,tmpCell);
             idMap=cat(2,idMap,idx);
+            
         elseif(numel(idx)>1)
             %%% need to cut %%%
             % get the seeds (marker in the ground truth)
@@ -150,6 +164,7 @@ for i=1:1:numFrame
                             'parent',[],'child',[],'Centroid',stat.Centroid);
                         cellFrame=cat(2,cellFrame,tmpCell);
                         idMap=cat(2,idMap,nidx);
+                        
                         clear tmpCell tmp h x0 y0 a im_region mask stat
                     end
                 end
@@ -197,6 +212,7 @@ for i=1:1:numFrame
                             'parent',[],'child',[],'Centroid',stat.Centroid);
                         cellFrame=cat(2,cellFrame,tmpCell);
                         idMap=cat(2,idMap,nidx);
+                        
                         clear tmpCell tmp h x0 y0 a im_region mask
                     end
                 end
