@@ -67,7 +67,7 @@ for i=2:1:numFrame
                             'MajorAxisLength','MinorAxisLength','Orientation');
                         topo2=[stat(1).Area,stat(1).MajorAxisLength,stat(1).MinorAxisLength,stat(1).Orientation];
                         
-                        str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%03d/%03d.tif.features',cellName,dataset,sq,t+offset,cellid);
+                        str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,t+offset,cellid);
                         M=dlmread(str,'');
                         Mat(t,1:M(1,1))=M(2,1:M(1,1));
                         Mat(t,end-5:end-2)=topo2(:);
