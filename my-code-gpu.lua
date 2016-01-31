@@ -17,7 +17,7 @@ cmd:option('--cutoffNorm', -1, 'max l2-norm of concatenation of all gradParam te
 cmd:option('--batchSize', 4, 'number of examples per batch')
 cmd:option('--cuda', true, 'use CUDA')
 cmd:option('--useDevice', 1, 'sets the device (GPU) to use')
-cmd:option('--nIteration', 2000, 'maximum number of iteration to run')
+cmd:option('--nIteration', 10000, 'maximum number of iteration to run')
 cmd:option('--maxTries', 50, 'maximum number of epochs to try to find a better local minima for early-stopping')
 cmd:option('--progress', false, 'print progress bar')
 cmd:option('--silent', false, 'don\'t print anything to stdout')
@@ -28,14 +28,17 @@ cmd:option('--lstm', false, 'use Long Short Term Memory (nn.LSTM instead of nn.R
 cmd:option('--gru', true, 'use Gated Recurrent Units (nn.GRU instead of nn.Recurrent)')
 cmd:option('--rho', 6, 'back-propagate through time (BPTT) for rho time-steps')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
-cmd:option('--dropout', false, 'apply dropout after each recurrent layer')
+cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
 cmd:option('--dropoutProb', 0.2, 'probability of zeroing a neuron (dropout probability)')
+
+-- file path
+cmd:option('--path','train_gt.csv','file path')
 
 cmd:text()
 opt = cmd:parse(arg or {})
 
 --[[Data]]--
-fpath='train_2.csv'
+fpath=opt.path;
 numPredict=3;
 
 local i=0
@@ -179,6 +182,7 @@ for k=1, opt.nIteration do
     lm:updateParameters(opt.lr)
 end
 
+torch.save('net.bin', lm)
 
 local inputs = {}
 
