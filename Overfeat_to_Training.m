@@ -85,7 +85,7 @@ for i=2:1:numFrame
                 
                 %%%% print to file %%%%
                 for t=1:1:seqLength
-                    for w=1:1:size(2,Mat)-1
+                    for w=1:1:size(Mat,2)-1
                         fprintf(fid,'%f,',Mat(t,w));
                     end
                     fprintf(fid,'%f\n',Mat(t,end));
