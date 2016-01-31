@@ -1,7 +1,7 @@
 cellName='N2DL-HeLa';
 dataset='train';
 sq=2;
-numFrame=2;
+numFrame=92;
 patchSize=101;
 halfPatch=(patchSize-1)/2+1;
 bdThreshold=25;
