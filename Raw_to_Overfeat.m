@@ -4,7 +4,7 @@ sq=2;
 numFrame=92;
 patchSize=81;
 halfPatch=(patchSize-1)/2+1;
-bdThreshold=5;
+bdThreshold=10;
 
 overFeatSize=231;
 se=strel('disk',5,0);
@@ -14,6 +14,12 @@ se3=strel('disk',3,0);
 str=sprintf('../data/%s/%s/%02d/t%02d.tif',cellName,dataset,sq,0);
 I=mat2gray(imread(str));
 [dimx,dimy]=size(I);
+
+bdTemp=ones(dimx,dimy);
+bdTemp(1:bdThreshold,:)=0;
+bdTemp(:,1:bdThreshold)=0;
+bdTemp(end-bdThreshold+1:end,:)=0;
+bdTemp(:,end-bdThreshold+1:end)=0;
 
 SegPatchIdx=0;
 CellPatchIdx=0;
@@ -49,11 +55,6 @@ for i=1:1:numFrame
     bw=imread(str);
     bw=bw>0;
     bw=imfill(bw,'holes');
-    
-    bw(bdThreshold,:)=0;
-    bw(:,bdThreshold)=0;
-    bw(end-bdThreshold+1,:)=0;
-    bw(:,end-bdThreshold+1)=0;
 
     %%% loop through each region %%% 
     cc=bwconncomp(bw);
@@ -65,6 +66,11 @@ for i=1:1:numFrame
     for k=1:1:cc.NumObjects      
         sc=ismember(labmat,k);
         idx=unique(nonzeros(track_lab(sc)));
+        
+        checkTemp=sc(bdTemp>0);
+        if(numel(idx)==0 && ~any(checkTemp))
+            continue;
+        end
         
         %%% update the segmentation information
         im_region = I_original;
