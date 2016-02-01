@@ -37,8 +37,6 @@ for i=1:1:numFrame
     if(~exist(str2,'dir'))
         mkdir(str2);
     end
-    
-    
 
     if(i>1)
         idMap0=idMap;
