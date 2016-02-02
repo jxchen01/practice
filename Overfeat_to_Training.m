@@ -7,7 +7,7 @@ maxMigration=60;
 seqLength=6;
 
 %%% load mother-child relationship of mitosis %%%
-str=sprintf('../data/%s/%s/%02d-GT/man_track.txt',cellName,dataset,sq);
+str=sprintf('../data/%s/%s/%02d_GT/man_track.txt',cellName,dataset,sq);
 rel=dlmread(str,' ');
 rel=uint16(rel);
 maxID=max(rel(:,1));
@@ -29,15 +29,12 @@ clear S
 
 fid=fopen('train_gt.csv','w');
 
-offset=-seqLength+1;
-for i=2:1:numFrame
-    offset=offset+1;
-    
+for i=2:1:numFrame    
     for j=1:1:seqLength-1
         cellBlock{j}=cellBlock{j+1};
     end
 
-    str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,offset+seqLength);
+    str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,i);
     S=load(str);
     cellBlock{seqLength}=S.cellFrame0;
 
@@ -65,7 +62,7 @@ for i=2:1:numFrame
             end
             
             if(flag>0)
-                str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,seqLength+offset,j);
+                str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,i,j);
                 M=dlmread(str,'');
                 Mat=zeros(seqLength,M(1,1)+5);
                 Mat(seqLength,1:M(1,1))=M(2,1:M(1,1));
@@ -79,7 +76,7 @@ for i=2:1:numFrame
                             'MajorAxisLength','MinorAxisLength','Orientation');
                         topo2=[stat(1).Area,stat(1).MajorAxisLength,stat(1).MinorAxisLength,stat(1).Orientation];
                         
-                        str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,t+offset,cellid);
+                        str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,t-seqLength+i,cellid);
                         M=dlmread(str,'');
                         Mat(t,1:M(1,1))=M(2,1:M(1,1));
                         Mat(t,end-5:end-2)=topo2(:);
@@ -188,7 +185,7 @@ for i=2:1:numFrame
             end
             
             if(flag>0)
-                str=sprintf('../data/%s/%s/%02d_SEG_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,seqLength+offset,j);
+                str=sprintf('../data/%s/%s/%02d_SEG_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,i,j);
                 M=dlmread(str,'');
                 Mat=zeros(seqLength,M(1,1)+5);
                 Mat(seqLength,1:M(1,1))=M(2,1:M(1,1));
