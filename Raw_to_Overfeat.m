@@ -70,7 +70,7 @@ for i=1:1:numFrame
     cc=bwconncomp(bw);
     labmat = labelmatrix(cc);
     
-    segFrame=cell(1,cc.NumObjects);
+    segFrame=cell(1,0);
     cellFrame=cell(1,0);
     idMap=[];
     for k=1:1:cc.NumObjects      
@@ -97,20 +97,21 @@ for i=1:1:numFrame
         stat=regionprops(sc,'Centroid');
         
         SegPatchIdx=SegPatchIdx+1;
-        rgb=cat(3,tmp,tmp,tmp);
-        str=sprintf('%s/%03d.tif',str2,SegPatchIdx);
-        imwrite(rgb,str);
+  %      rgb=cat(3,tmp,tmp,tmp);
+  %      str=sprintf('%s/%03d.tif',str2,SegPatchIdx);
+  %      imwrite(rgb,str);
         
-        segFrame{k}=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
+        tmpCell=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
             'child',[],'Centroid',stat.Centroid);
-        
+        segFrame = cat(2,segFrame,tmpCell);
+        clear tmpCell
         
         %%% update the ground truth information
         if(numel(idx)==1)
             %%%%% true positive %%%% 
             CellPatchIdx = CellPatchIdx+1;
-            str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
-            imwrite(rgb,str);
+ %           str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
+ %           imwrite(rgb,str);
             
             tmpCell = struct('seg',sc,'id',idx,'patch',CellPatchIdx,'parent',[],...
                 'child',[],'Centroid',stat.Centroid);
@@ -171,9 +172,9 @@ for i=1:1:numFrame
                         stat=regionprops(scs,'Centroid');
                         
                         CellPatchIdx=CellPatchIdx+1;
-                        rgb=cat(3,tmp,tmp,tmp);
-                        str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
-                        imwrite(rgb,str);
+  %                      rgb=cat(3,tmp,tmp,tmp);
+  %                      str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
+  %                      imwrite(rgb,str);
         
                         tmpCell=struct('seg',scs,'id',nidx,'patch',CellPatchIdx,...
                             'parent',[],'child',[],'Centroid',stat.Centroid);
@@ -218,9 +219,9 @@ for i=1:1:numFrame
                         stat=regionprops(scs,'Centroid');
                         
                         CellPatchIdx = CellPatchIdx +1;
-                        rgb=cat(3,tmp,tmp,tmp);
-                        str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
-                        imwrite(rgb,str);
+ %                       rgb=cat(3,tmp,tmp,tmp);
+ %                       str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
+ %                       imwrite(rgb,str);
                         
                         tmpCell=struct('seg',scs,'id',nidx,'patch',CellPatchIdx,...
                             'parent',[],'child',[],'Centroid',stat.Centroid);
