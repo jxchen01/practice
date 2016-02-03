@@ -135,7 +135,7 @@ end
 cellBlock=cell(1,seqLength);
 fid=fopen('train_seg.csv','w');
 
-str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,i);
+str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,1);
 S=load(str);
 
 for i=2:1:numFrame
