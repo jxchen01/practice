@@ -39,7 +39,7 @@ end
 local outpath='data_gt.t7'
 torch.save(outpath,data)
 local outpath2='target_gt.t7'
-torch.save(outpath2,target)
+torch.save(outpath2,labels)
 --[[
 local input_data = torch.load(outpath)
 local target_data = torch.load(outpath2)

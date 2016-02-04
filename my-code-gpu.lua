@@ -8,13 +8,13 @@ cmd:text('Train a RNN Model on sample dataset using LSTM or GRU to compute state
 cmd:text('Example:')
 cmd:text("my-code.lua --cuda --useDevice 2 --progress --zeroFirst --cutoffNorm 4 --rho 10")
 cmd:text('Options:')
-cmd:option('--lr', 0.01, 'learning rate at t=0')
+cmd:option('--lr', 0.001, 'learning rate at t=0')
 cmd:option('--minLR', 0.00001, 'minimum learning rate')
 cmd:option('--saturateEpoch', 400, 'epoch at which linear decayed LR will reach minLR')
-cmd:option('--momentum', 0.9, 'momentum')
+cmd:option('--momentum', 0.99, 'momentum')
 cmd:option('--maxOutNorm', -1, 'max l2-norm of each layer\'s output neuron weights')
 cmd:option('--cutoffNorm', -1, 'max l2-norm of concatenation of all gradParam tensors')
-cmd:option('--batchSize', 4, 'number of examples per batch')
+cmd:option('--batchSize', 64, 'number of examples per batch')
 cmd:option('--cuda', true, 'use CUDA')
 cmd:option('--useDevice', 1, 'sets the device (GPU) to use')
 cmd:option('--nIteration', 10000, 'maximum number of iteration to run')
@@ -32,53 +32,31 @@ cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
 cmd:option('--dropoutProb', 0.2, 'probability of zeroing a neuron (dropout probability)')
 
 -- file path
-cmd:option('--path','train_gt.csv','file path')
+cmd:option('--dataPath','data_gt.t7','data path')
+cmd:option('--labelPath','target_gt.t7','label path')
 
 cmd:text()
 opt = cmd:parse(arg or {})
 
 --[[Data]]--
-fpath=opt.path;
 numPredict=3;
 
-local i=0
-for line in io.lines(fpath) do
-    if i==0 then
-        COLS = #line:split(',')
-    end
-    i=i+1
-end
+local outpath=opt.dataPath
+local outpath2=opt.labelPath
 
-SEQS=math.ceil(i/7);
-ROWS=SEQS*6;
+local data = torch.load(outpath)
+local labels = torch.load(outpath2)
 
-local data=torch.Tensor(ROWS,COLS)
-local labels=torch.Tensor(SEQS,numPredict)
-local i=0
-local j=0
-local k=0
-for line in io.lines(fpath) do
-    i=i+1
-    local l=line:split(',')
-    if math.fmod(i,7)==0 then
-        j=j+1
-        for key, val in ipairs(l) do
-            labels[j][key]=val
-        end
-    else
-        k=k+1
-        for key, val in ipairs(l) do
-            data[k][key]=val
-        end
-    end
-end
+COLS = data:size(2)
+SEQS = labels:size(1)
+ROWS = SEQS*6;
 
 --[[Model]]--
 
 -- language model
 lm = nn.Sequential()
-local hiddenSize= {200,200}
-local inputSize = 200
+local hiddenSize= {512,1024,1024,512}
+local inputSize = 512
 
 lm:add(nn.Sequencer(nn.Linear(COLS,inputSize)))
 
