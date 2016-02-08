@@ -14,7 +14,7 @@ cmd:option('--saturateEpoch', 400, 'epoch at which linear decayed LR will reach 
 cmd:option('--momentum', 0.99, 'momentum')
 cmd:option('--maxOutNorm', -1, 'max l2-norm of each layer\'s output neuron weights')
 cmd:option('--cutoffNorm', -1, 'max l2-norm of concatenation of all gradParam tensors')
-cmd:option('--batchSize', 64, 'number of examples per batch')
+cmd:option('--batchSize', 32, 'number of examples per batch')
 cmd:option('--cuda', true, 'use CUDA')
 cmd:option('--useDevice', 1, 'sets the device (GPU) to use')
 cmd:option('--nIteration', 10000, 'maximum number of iteration to run')
@@ -39,7 +39,7 @@ cmd:text()
 opt = cmd:parse(arg or {})
 
 --[[Data]]--
-numPredict=3;
+numPredict=5;
 
 local outpath=opt.dataPath
 local outpath2=opt.labelPath
@@ -142,25 +142,33 @@ for k=1, opt.nIteration do
     offsets:add(1)
     offsets[offsets:gt(SEQS)]=1
 
-   -- rnn:zeroGradParameters() 
-
-   
-    local outputs = lm:forward(inputs)
-    
+    local outputs = lm:forward(inputs)    
 
     local err = criterion:forward(outputs:float(),targets:float())
 
-    print('Iter: '.. k ..' Err: '.. err)
+    -- print('Iter: '.. k ..' Err: '.. err)
 
+    if k<3
+       print('Good') 
+    end
+    
     lm:zeroGradParameters()
 
     local gradOutputs = criterion:backward(outputs,targets)
     local gradInputs = lm:backward(inputs,gradOutputs)
     
     lm:updateParameters(opt.lr)
+
+    if (k>10000 and k % 1000 ==0) or k==opt.nIteration
+       print('Iter: '.. k ..' Err: '.. err)
+       filename=string.format('./checkpoint/net_%f.bin',k);
+       torch.save(filename,lm);
+    end 
+
+    if k % 10 == 0 then collectgarbage() end
 end
 
-torch.save('net.bin', lm)
+-- torch.save('net.bin', lm)
 
 local inputs = {}
 
@@ -173,9 +181,10 @@ end
 local outputs=lm:forward(inputs)
 
 torch.save('write.dat', outputs:float(),'ascii')
+torch.save('write.bin', outputs:float())
 
-print(outputs)
-print(type(outputs))
+--print(outputs)
+--print(type(outputs))
 
 --[[
 local myfile = hdf5.open('write.h5','w')
