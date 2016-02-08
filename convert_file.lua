@@ -1,5 +1,5 @@
 fpath='train_gt.csv'
-numPredict=3;
+numPredict=5;
 
 local i=0
 for line in io.lines(fpath) do 
