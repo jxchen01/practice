@@ -26,7 +26,7 @@ for i=2:1:numFrame
     
     cellBlock = new_EMD(cellBlock,i);
 
-    cellBlock{seqLength} = segUpdate(cellBlock{seqLength-1}, cellBlock{seqLength});
+    [cellBlock{seqLength-1},cellBlock{seqLength}] = segUpdate(cellBlock{seqLength-1}, cellBlock{seqLength});
 
     %%% save the tracking result %%%
     str=sprintf('../data/%s/%s/%02d_Track/track_%02d.mat',cellName,dataset,sq,i-1);

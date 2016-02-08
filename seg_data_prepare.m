@@ -80,7 +80,7 @@ for i=1:1:numFrame
         imwrite(rgb,str);
         
         topo=[a.Area,a.MajorAxisLength,a.MinorAxisLength,a.Orientation];
-        tmpCell=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
+        tmpCell=struct('seg',sc,'id',[],'patch',SegPatchIdx,'parent',[],...
             'child',[],'Centroid',a.Centroid,'props',topo);
         segFrame = cat(2,segFrame,tmpCell);
         clear tmpCell
