@@ -126,7 +126,7 @@ for i=2:1:numFrame
                     else
                         fprintf(fid,'%f,%f,%f',0.85,1.0,1.0);
                     end        
-                    if(leavingIdx(cellBlock{seqLength-1}{k}.id)==i-1)
+                    if(leaveIdx(cellBlock{seqLength-1}{k}.id)==i-1)
                         fprintf(fid,',%f',0.01);
                     else
                         fprintf(fid,',%f',0.86);
@@ -260,7 +260,7 @@ for i=2:1:numFrame
                         fprintf(fid,'%f,%f,%f',0.85,1.0,1.0);
                     end    
                     
-                    if(leavingIdx(cellBlock{seqLength-1}{k}.id)==i-1)
+                    if(leaveIdx(cellBlock{seqLength-1}{k}.id)==i-1)
                         fprintf(fid,',%f',0.01);
                     else
                         fprintf(fid,',%f',0.88);
