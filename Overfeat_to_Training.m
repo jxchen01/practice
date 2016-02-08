@@ -6,15 +6,23 @@ numFrame=92;
 maxMigration=60;
 seqLength=6;
 
-%%% load mother-child relationship of mitosis %%%
+%%% load mother-child relationship of mitosis, and aptosis %%%
 str=sprintf('../data/%s/%s/%02d_GT/man_track.txt',cellName,dataset,sq);
 rel=dlmread(str,' ');
 rel=uint16(rel);
 maxID=max(rel(:,1));
 motherMap=zeros(maxID,1);
+enterIdx=zeros(maxID,1);
+leaveIdx=zeros(maxID,1);
 for i=1:1:size(rel,1)
     if(rel(i,4)>1e-5)
         motherMap(rel(i,1))=rel(i,4);
+    end
+    if(rel(i,2)>1e-5)
+        enterIdx(rel(i,1))=rel(i,2)+1; % 0 based
+    end
+    if(rel(i,3)>1e-5 && rel(i,3)<numFrame && rel(i,4)<1e-5)
+        leaveIdx(rel(i,1))=rel(i,3)+1; % 0 based
     end
 end
     
@@ -28,7 +36,6 @@ cellBlock{seqLength}=S.cellFrame0;
 clear S
 
 fid=fopen('train_gt.csv','w');
-
 for i=2:1:numFrame    
     for j=1:1:seqLength-1
         cellBlock{j}=cellBlock{j+1};
@@ -109,17 +116,28 @@ for i=2:1:numFrame
                     end
                     fprintf(fid,'%f\n',Mat(t,end));
                 end
+                
                 if(flag==1)
-                    fprintf(fid,'%f,%f,%f\n',0.1,1.0,1.0);
-                elseif(flag==2)
+                    fprintf(fid,'%f,%f,%f,%f,%f\n',0.1,1.0,1.0,0.999,0.999);
+                elseif(flag==2) % no relationship
                     nc=nnz(motherMap==cellBlock{seqLength-1}{k}.id);
-                    if(nc>1 )
-                        fprintf(fid,'%f,%f,%f\n',1.0,1.0,1.0);
+                    if(nc>1)
+                        fprintf(fid,'%f,%f,%f',1.0,1.0,1.0);
                     else
-                        fprintf(fid,'%f,%f,%f\n',0.85,1.0,1.0);
-                    end              
+                        fprintf(fid,'%f,%f,%f',0.85,1.0,1.0);
+                    end        
+                    if(leavingIdx(cellBlock{seqLength-1}{k}.id)==i-1)
+                        fprintf(fid,',%f',0.01);
+                    else
+                        fprintf(fid,',%f',0.86);
+                    end
+                    if(enterIdx(cid)==i)
+                        fprintf(fid,',%f\n',0.01);
+                    else
+                        fprintf(fid,',%f\n',0.86);
+                    end
                 elseif(flag==3)
-                    fprintf(fid,'%f,%f,%f\n',0.01,1.0/nnz(motherMap==motherMap(cid)),1.0);
+                    fprintf(fid,'%f,%f,%f,%f,%f\n',0.01,1.0/nnz(motherMap==motherMap(cid)),1.0,0.999,0.999);
                 else
                     error('error in flag');
                 end
@@ -233,14 +251,33 @@ for i=2:1:numFrame
                     fprintf(fid,'%f\n',Mat(t,end));
                 end
                 if(flag==1) % migration
-                    fprintf(fid,'%f,%f,%f\n',0.1,1.0,1.0/numel(cid));
+                    fprintf(fid,'%f,%f,%f,%f,%f\n',0.1,1.0,1.0/numel(cid),0.999,0.999);
                 elseif(flag==2) % false connection
                     nc=nnz(motherMap==cellBlock{seqLength-1}{k}.id);
                     if(nc>1)
-                        fprintf(fid,'%f,%f,%f\n',1.0,1.0,1.0);
+                        fprintf(fid,'%f,%f,%f',1.0,1.0,1.0);
                     else
-                        fprintf(fid,'%f,%f,%f\n',0.85,1.0,1.0);
+                        fprintf(fid,'%f,%f,%f',0.85,1.0,1.0);
                     end    
+                    
+                    if(leavingIdx(cellBlock{seqLength-1}{k}.id)==i-1)
+                        fprintf(fid,',%f',0.01);
+                    else
+                        fprintf(fid,',%f',0.88);
+                    end
+                    tmpCount=0;
+                    for t=1:1:numel(cid)
+                        if(enterIdx(cid(t))==i)
+                            tmpCount=tmpCount+1;
+                        end
+                    end
+                    if(tmpCount>0)
+                        fprintf(fid,',%f\n',0.01+0.1*(nuumel(cid)-tmpCount));
+                    else
+                        fprintf(fid,',%f\n',0.88);
+                    end
+                    clear tmpCount
+                    
                 elseif(flag==3) % mitosis
                     count=0;
                     for t=1:1:numel(cid)
@@ -248,8 +285,9 @@ for i=2:1:numFrame
                             count=count+1;
                         end
                     end
-                    fprintf(fid,'%f,%f,%f\n',0.01,...
-                        double(count)/double(nnz(motherMap==cellBlock{seqLength-1}{k}.id)),double(count)/double(numel(cid)));
+                    fprintf(fid,'%f,%f,%f,%f,%f\n',0.01,...
+                        double(count)/double(nnz(motherMap==cellBlock{seqLength-1}{k}.id))...
+                        ,double(count)/double(numel(cid)),0.999,0.999);
                     clear count
                 else
                     error('error in flag');
