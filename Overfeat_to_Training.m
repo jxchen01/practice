@@ -25,6 +25,7 @@ for i=1:1:size(rel,1)
         leaveIdx(rel(i,1))=rel(i,3)+1; % 0 based
     end
 end
+clear rel maxID
     
 % part 1: purely based on ground truth
 cellBlock=cell(1,seqLength);
@@ -47,6 +48,7 @@ for i=2:1:numFrame
     str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,i);
     S=load(str);
     cellBlock{seqLength}=S.cellFrame0;
+    clear S
 
     for j=1:1:numel(cellBlock{seqLength})
         c1=cellBlock{seqLength}{j}.Centroid;
@@ -67,6 +69,7 @@ for i=2:1:numFrame
                     flag=2;
                     cellid=k;
                 end
+                clear c2
             end
             
             if(flag>0)
@@ -87,6 +90,7 @@ for i=2:1:numFrame
                         Mat(t,1:M(1,1))=M(2,1:M(1,1));
                         Mat(t,end-5:end-2)=topo2(:);
                         Mat(t,end-1:end)=c2(:);
+                        clear M
                         
                         if(~isempty(cellBlock{t}{cellid}.parent))
                             cellid=cellBlock{t}{cellid}.parent;
@@ -102,6 +106,7 @@ for i=2:1:numFrame
                             else
                                 cellid=-1;
                             end
+                            clear pid
                         end
                     else
                         Mat(t,:)=0;
@@ -115,6 +120,8 @@ for i=2:1:numFrame
                     end
                     fprintf(fid,'%f\n',Mat(t,end));
                 end
+                
+                clear Mat
                 
                 if(flag==1)
                     fprintf(fid,'%f,%f,%f,%f,%f\n',0.1,1.0,1.0,0.999,0.999);
@@ -142,6 +149,7 @@ for i=2:1:numFrame
                 end
             end
         end
+        clear c1 cid topo1
     end
 end
 fclose(fid);
@@ -197,6 +205,7 @@ for i=2:1:numFrame
                         flag=2;
                         cellid=k;
                     end
+                    clear c2
                 end
             end
             
@@ -218,6 +227,7 @@ for i=2:1:numFrame
                         Mat(t,1:M(1,1))=M(2,1:M(1,1));
                         Mat(t,end-5:end-2)=topo2(:);
                         Mat(t,end-1:end)=c2(:);
+                        clear M
                         
                         if(~isempty(cellBlock{t}{cellid}.parent))
                             cellid=cellBlock{t}{cellid}.parent;
@@ -233,6 +243,7 @@ for i=2:1:numFrame
                             else
                                 cellid=-1;
                             end
+                            clear pid
                         end
                     else
                         Mat(t,:)=0;
@@ -246,6 +257,8 @@ for i=2:1:numFrame
                     end
                     fprintf(fid,'%f\n',Mat(t,end));
                 end
+                clear Mat
+                
                 if(flag==1) % migration
                     fprintf(fid,'%f,%f,%f,%f,%f\n',0.1,1.0,1.0/numel(cid),0.999,0.999);
                 elseif(flag==2) % false connection
@@ -290,6 +303,7 @@ for i=2:1:numFrame
                 end
             end
         end
+        clear c1 cid topo1
     end
 end
 fclose(fid);
