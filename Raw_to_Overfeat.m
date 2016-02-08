@@ -12,7 +12,7 @@ se3=strel('disk',3,0);
 
 %%%%% get image size %%%%
 str=sprintf('../data/%s/%s/%02d/t%02d.tif',cellName,dataset,sq,0);
-I=mat2gray(imread(str));
+I=imread(str);
 [dimx,dimy]=size(I);
 
 bdTemp=true(dimx,dimy);
@@ -43,6 +43,7 @@ for i=1:1:numFrame
         cellFrame0=cellFrame;
         segFrame0=segFrame;
     end
+    
     %%% load raw image %%%
     str=sprintf('../data/%s/%s/%02d/t%02d.tif',cellName,dataset,sq,i-1);
     I=mat2gray(imread(str));
@@ -59,6 +60,7 @@ for i=1:1:numFrame
         rgIdx=find(track_lab_raw==tid);
         track_lab(rgIdx(1))=tid;
     end
+    clear rgIdx track_lab_raw track_id
     
     %%% load segmentation result %%%
     str=sprintf('../data/%s/%s/%02d_SEG/%d.tif',cellName,dataset,sq,i);
@@ -68,12 +70,15 @@ for i=1:1:numFrame
 
     %%% loop through each region %%% 
     cc=bwconncomp(bw);
+    stat=regionprops(cc,'Centroid','Area','MajorAxisLength','MinorAxisLength','Orientation');
     labmat = labelmatrix(cc);
+    numRegion = cc.NumObjects;
+    clear cc str
     
     segFrame=cell(1,0);
     cellFrame=cell(1,0);
     idMap=[];
-    for k=1:1:cc.NumObjects      
+    for k=1:1:numRegion     
         sc=ismember(labmat,k);
         idx=unique(nonzeros(track_lab(sc)));
         
@@ -81,30 +86,33 @@ for i=1:1:numFrame
         if(numel(idx)==0 && ~any(checkTemp(:)))
             continue;
         end
+        clear checkTemp
         
         %%% update the segmentation information
         im_region = I_original;
         mask = imdilate(sc,se);
         im_region(~mask)=0;
-        a = regionprops(sc,'Centroid');
-        x0=round(a.Centroid(2));y0=round(a.Centroid(1));
+        x0=round(stat(k).Centroid(2));y0=round(stat(k).Centroid(1));
         tmp=zeros(patchSize,patchSize);
         h=min([x0-1,y0-1,20,dimx-x0,dimy-y0]);
         tmp(halfPatch-h:1:halfPatch+h, halfPatch-h:1:halfPatch+h)=...
             im_region(x0-h:1:x0+h,y0-h:1:y0+h);
         tmp=imresize(tmp,[overFeatSize,overFeatSize]);
         tmp=mat2gray(tmp);
-        stat=regionprops(sc,'Centroid');
         
         SegPatchIdx=SegPatchIdx+1;
         rgb=cat(3,tmp,tmp,tmp);
         str=sprintf('%s/%03d.tif',str2,SegPatchIdx);
         imwrite(rgb,str);
         
+        clear im_region mask tmp h x0 y0
+        
+        topo=[stat(k).Area,stat(k).MajorAxisLength,stat(k).MinorAxisLength,stat(k).Orientation];
+        
         tmpCell=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
-            'child',[],'Centroid',stat.Centroid);
+            'child',[],'Centroid',stat(k).Centroid,'props',topo);
         segFrame = cat(2,segFrame,tmpCell);
-        clear tmpCell
+        clear tmpCell 
         
         %%% update the ground truth information
         if(numel(idx)==1)
@@ -114,10 +122,11 @@ for i=1:1:numFrame
             imwrite(rgb,str);
             
             tmpCell = struct('seg',sc,'id',idx,'patch',CellPatchIdx,'parent',[],...
-                'child',[],'Centroid',stat.Centroid);
+                'child',[],'Centroid',stat(k).Centroid,'props',topo);
             cellFrame=cat(2,cellFrame,tmpCell);
             idMap=cat(2,idMap,idx);
             
+            clear tmpCell sc topo str
         elseif(numel(idx)>1)
             %%% need to cut %%%
             % get the seeds (marker in the ground truth)
@@ -140,6 +149,8 @@ for i=1:1:numFrame
             I_mod =imimposemin(aa, ~sc_mask|seeds);
             L = watershed(I_mod);
             
+            clear sc_mask I_mod aa distmap
+            
             if(max(L(:))~=numel(idx)+1) % watershed didn't get the correct number of regions
                 
                 % cut by voronoi diagram (outer-centerline)
@@ -147,21 +158,23 @@ for i=1:1:numFrame
                 bctl=bwmorph(b,'thin',Inf);
                 L=L>1;
                 L(bctl>0)=0;
+                clear bctl b
                 
                 % check each split region
                 numNew=0;
                 new_cc = bwconncomp(L,4);
+                a=regionprops(new_cc,'Centroid','Area','MajorAxisLength','MinorAxisLength','Orientation');
                 lab_cut=labelmatrix(new_cc);
                 for j=1:1:new_cc.NumObjects
                     scs=ismember(lab_cut,j);
                     nidx=unique(nonzeros(track_lab(scs)));
                     if(numel(nidx)==1)    
                         numNew = numNew + 1;
+                        
                         im_region = I_original;
                         mask = imdilate(scs,se);
                         im_region(~mask)=0;
-                        a = regionprops(scs,'Centroid');
-                        x0=round(a.Centroid(2));y0=round(a.Centroid(1));
+                        x0=round(a(j).Centroid(2));y0=round(a(j).Centroid(1));
                         tmp=zeros(patchSize,patchSize);
                         h=min([x0-1,y0-1,20,dimx-x0,dimy-y0]);
                         tmp(halfPatch-h:1:halfPatch+h, halfPatch-h:1:halfPatch+h)=...
@@ -169,21 +182,22 @@ for i=1:1:numFrame
                         tmp=imresize(tmp,[overFeatSize,overFeatSize]);
                         tmp=mat2gray(tmp);
                         
-                        stat=regionprops(scs,'Centroid');
-                        
                         CellPatchIdx=CellPatchIdx+1;
                         rgb=cat(3,tmp,tmp,tmp);
                         str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
                         imwrite(rgb,str);
+                        
+                        topo=[a(j).Area,a(j).MajorAxisLength,a(j).MinorAxisLength,a(j).Orientation];
         
                         tmpCell=struct('seg',scs,'id',nidx,'patch',CellPatchIdx,...
-                            'parent',[],'child',[],'Centroid',stat.Centroid);
+                            'parent',[],'child',[],'Centroid',a(j).Centroid,'props',topo);
                         cellFrame=cat(2,cellFrame,tmpCell);
                         idMap=cat(2,idMap,nidx);
                         
-                        clear tmpCell tmp h x0 y0 a im_region mask stat
+                        clear tmpCell tmp h x0 y0 im_region mask topo
                     end
                 end
+                clear a
                 
                 if(numNew~=numel(idx))
                     disp('error in separating cells');
@@ -198,39 +212,41 @@ for i=1:1:numFrame
                 % check each split region
                 numNew=0;
                 new_cc = bwconncomp(L,4);
+                a=regionprops(new_cc,'Centroid','Area','MajorAxisLength','MinorAxisLength','Orientation');
                 lab_cut=labelmatrix(new_cc);
                 for j=1:1:new_cc.NumObjects
                     scs=ismember(lab_cut,j);
                     nidx=unique(nonzeros(track_lab(scs)));
                     if(numel(nidx)==1)    
                         numNew = numNew + 1;
+                        
                         im_region = I_original;
                         mask = imdilate(scs,se);
                         im_region(~mask)=0;
-                        a = regionprops(scs,'Centroid');
-                        x0=round(a.Centroid(2));y0=round(a.Centroid(1));
+                        x0=round(a(j).Centroid(2));y0=round(a(j).Centroid(1));
                         tmp=zeros(patchSize,patchSize);
                         h=min([x0-1,y0-1,20,dimx-x0,dimy-y0]);
                         tmp(halfPatch-h:1:halfPatch+h, halfPatch-h:1:halfPatch+h)=...
                             im_region(x0-h:1:x0+h,y0-h:1:y0+h);
                         tmp=imresize(tmp,[overFeatSize,overFeatSize]);
                         tmp=mat2gray(tmp);
-                        
-                        stat=regionprops(scs,'Centroid');
-                        
+
                         CellPatchIdx = CellPatchIdx +1;
                         rgb=cat(3,tmp,tmp,tmp);
                         str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
                         imwrite(rgb,str);
                         
+                        topo=[a(j).Area,a(j).MajorAxisLength,a(j).MinorAxisLength,a(j).Orientation];
+                        
                         tmpCell=struct('seg',scs,'id',nidx,'patch',CellPatchIdx,...
-                            'parent',[],'child',[],'Centroid',stat.Centroid);
+                            'parent',[],'child',[],'Centroid',a(j).Centroid,'props',topo);
                         cellFrame=cat(2,cellFrame,tmpCell);
                         idMap=cat(2,idMap,nidx);
                         
-                        clear tmpCell tmp h x0 y0 a im_region mask
+                        clear tmpCell tmp h x0 y0 im_region mask topo
                     end
                 end
+                clear a
             end
             clear I_mod L scs nidx 
         end
@@ -258,6 +274,8 @@ for i=1:1:numFrame
             save(str,'cellFrame0','segFrame0');
         end
     end
+    
+    clear bw  track_lab I_original I labmat
 
 end
 
