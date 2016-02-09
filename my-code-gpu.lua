@@ -44,18 +44,24 @@ numPredict=5;
 local outpath=opt.dataPath
 local outpath2=opt.labelPath
 
+print('loading data...')
+
 local data = torch.load(outpath)
 local labels = torch.load(outpath2)
+
+print('success!')
 
 COLS = data:size(2)
 SEQS = labels:size(1)
 ROWS = SEQS*6;
 
+print('start to build model...')
+
 --[[Model]]--
 
 -- language model
 lm = nn.Sequential()
-local hiddenSize= {512,1024,1024,512}
+local hiddenSize= {512,512}
 local inputSize = 512
 
 lm:add(nn.Sequencer(nn.Linear(COLS,inputSize)))
@@ -103,6 +109,8 @@ criterion = nn.MSECriterion()
 -- linear decay
 opt.decayFactor = (opt.minLR - opt.lr)/opt.saturateEpoch
 
+print('model is done')
+
 if opt.cuda then
    require 'cutorch'
    require 'cunn'
@@ -148,7 +156,7 @@ for k=1, opt.nIteration do
 
     -- print('Iter: '.. k ..' Err: '.. err)
 
-    if k<3
+    if k<3 then
        print('Good') 
     end
     
@@ -159,7 +167,7 @@ for k=1, opt.nIteration do
     
     lm:updateParameters(opt.lr)
 
-    if (k>10000 and k % 1000 ==0) or k==opt.nIteration
+    if (k>10000 and k % 1000 ==0) or k==opt.nIteration then
        print('Iter: '.. k ..' Err: '.. err)
        filename=string.format('./checkpoint/net_%f.bin',k);
        torch.save(filename,lm);
