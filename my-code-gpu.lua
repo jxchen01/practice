@@ -46,11 +46,13 @@ if opt.cuda then
    cutorch.setDevice(opt.useDevice)
 end
 
+print('start to build model...')
+
 --[[Model]]--
 
 -- RNN model
 lm = nn.Sequential()
-local hiddenSize= {512,1024,1024,512}
+local hiddenSize= {512,512}
 local inputSize = 512
 
 lm:add(nn.Sequencer(nn.Linear(COLS,inputSize)))
@@ -91,6 +93,8 @@ criterion = nn.MSECriterion()
 
 -- linear decay
 opt.decayFactor = (opt.minLR - opt.lr)/opt.saturateEpoch
+
+print('model is done')
 
 if opt.cuda then
    print('shipping model to cuda')
