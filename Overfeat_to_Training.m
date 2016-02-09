@@ -36,7 +36,8 @@ cellBlock{seqLength}=S.cellFrame0;
 [dimx,dimy]=size(S.cellFrame0{1}.seg);
 clear S
 
-fid=fopen('train_gt.csv','W');
+pageNum=1;pageSize=0;
+fid=fopen('train_gt_1.csv','W');
 for i=2:1:numFrame    
     
     disp(i)
@@ -114,6 +115,15 @@ for i=2:1:numFrame
                 end
                 
                 %%%% print to file %%%%
+                % check size first
+                pageSize=pageSize+1;
+                if(pageSize>5000)
+                    pageSize=0;
+                    pageNum = pageNum+1;
+                    fclose(fid);
+                    fid=fopen(['train_gt_',num2str(pageNum),'.csv'],'W');
+                end
+                
                 for t=1:1:seqLength
                     for w=1:1:size(Mat,2)-1
                         fprintf(fid,'%f,',Mat(t,w));
@@ -147,6 +157,7 @@ for i=2:1:numFrame
                 else
                     error('error in flag');
                 end
+                
             end
         end
         clear c1 cid topo1
@@ -158,7 +169,8 @@ fclose(fid);
 % part 2: based on segmentation and ground truth history
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cellBlock=cell(1,seqLength);
-fid=fopen('train_seg.csv','W');
+pageNum=1;pageSize=0;
+fid=fopen('train_seg_1.csv','W');
 
 str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,1);
 S=load(str);
@@ -251,6 +263,15 @@ for i=2:1:numFrame
                 end
                 
                 %%%% print to file %%%%
+                % check size first
+                pageSize=pageSize+1;
+                if(pageSize>5000)
+                    pageSize=0;
+                    pageNum = pageNum+1;
+                    fclose(fid);
+                    fid=fopen(['train_seg_',num2str(pageNum),'.csv'],'W');
+                end
+                
                 for t=1:1:seqLength
                     for w=1:1:size(Mat,2)-1
                         fprintf(fid,'%f,',Mat(t,w));
@@ -301,6 +322,7 @@ for i=2:1:numFrame
                 else
                     error('error in flag');
                 end
+                
             end
         end
         clear c1 cid topo1

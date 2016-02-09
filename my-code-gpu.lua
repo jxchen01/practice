@@ -1,4 +1,6 @@
 require 'rnn'
+require 'luafilesystem'
+
 version = 1
 
 --[[command line arguments]]--
@@ -18,8 +20,8 @@ cmd:option('--batchSize', 32, 'number of examples per batch')
 cmd:option('--cuda', true, 'use CUDA')
 cmd:option('--useDevice', 1, 'sets the device (GPU) to use')
 cmd:option('--nIteration', 10000, 'maximum number of iteration to run')
+cmd:option('--subIteration',500,'number of training steps in each subset')
 cmd:option('--maxTries', 50, 'maximum number of epochs to try to find a better local minima for early-stopping')
-cmd:option('--progress', false, 'print progress bar')
 cmd:option('--silent', false, 'don\'t print anything to stdout')
 cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution between -uniform and uniform. -1 means default initialization')
 
@@ -29,31 +31,24 @@ cmd:option('--gru', true, 'use Gated Recurrent Units (nn.GRU instead of nn.Recur
 cmd:option('--rho', 6, 'back-propagate through time (BPTT) for rho time-steps')
 cmd:option('--zeroFirst', false, 'first step will forward zero through recurrence (i.e. add bias of recurrence). As opposed to learning bias specifically for first step.')
 cmd:option('--dropout', true, 'apply dropout after each recurrent layer')
-cmd:option('--dropoutProb', 0.2, 'probability of zeroing a neuron (dropout probability)')
+cmd:option('--dropoutProb', 0.1, 'probability of zeroing a neuron (dropout probability)')
 
 -- file path
-cmd:option('--dataPath','data_gt.t7','data path')
-cmd:option('--labelPath','target_gt.t7','label path')
+cmd:option('--fPath','./train','directory to data')
+cmd:option('--trainingType','gt','gt or seg')
 
 cmd:text()
 opt = cmd:parse(arg or {})
 
---[[Data]]--
-numPredict=5;
-
-local outpath=opt.dataPath
-local outpath2=opt.labelPath
-
-local data = torch.load(outpath)
-local labels = torch.load(outpath2)
-
-COLS = data:size(2)
-SEQS = labels:size(1)
-ROWS = SEQS*6;
+if opt.cuda then
+   require 'cutorch'
+   require 'cunn'
+   cutorch.setDevice(opt.useDevice)
+end
 
 --[[Model]]--
 
--- language model
+-- RNN model
 lm = nn.Sequential()
 local hiddenSize= {512,1024,1024,512}
 local inputSize = 512
@@ -81,10 +76,7 @@ for i,hs in ipairs(hiddenSize) do
    inputSize = hs
 end
 
-
 -- output layer
--- lm:add(nn.Sequencer(nn.Linear(inputSize, numPredict)))
-
 lm:add(nn.SelectTable(-1))
 lm:add(nn.Linear(inputSize, numPredict))
 
@@ -94,9 +86,6 @@ if opt.uniform > 0 then
    end
 end
 
--- will recurse a single continuous sequence
--- lm:remember((opt.lstm or opt.gru) and 'both' or 'eval')
-
 --criterion = nn.SequencerCriterion(nn.MSECriterion())
 criterion = nn.MSECriterion()
 
@@ -104,69 +93,123 @@ criterion = nn.MSECriterion()
 opt.decayFactor = (opt.minLR - opt.lr)/opt.saturateEpoch
 
 if opt.cuda then
-   require 'cutorch'
-   require 'cunn'
-   cutorch.setDevice(opt.useDevice)
-   lm:cuda()
    print('shipping model to cuda')
-   data=data:cuda()
-   labels=labels:cuda()
-   print('shipping data to cuda')
-   criterion = criterion:cuda()
+   lm:cuda()
    print('shippig criterion to cuda')
+   criterion = criterion:cuda()
+ end
+
+
+--[[Data]]--
+numPredict=5;
+
+local datapath=string.format('%s/%s/%s/'opt.fpath,opt.trainType,'data');
+local targetpath=string.format('%s/%s/%s/'opt.fpath,opt.trainType,'target');
+
+local datadir = lfs.dir(datapath)
+local datafile = datadir:next() 
+
+local targetdir = lfs.dir(targetpath)
+local targetfile = targetdir:next()
+
+local data = torch.load(datafile)
+local labels = torch.load(targetfile)
+
+COLS = data:size(2)
+SEQS = labels:size(1)
+ROWS = SEQS*6;
+
+if opt.cuda then
+  print('shipping data to cuda')
+  data=data:cuda()
+  labels=labels:cuda() 
 end
+
+print('Good')
+collectgarbage()
 
 --[[Experiment]]--
 offsets = torch.LongTensor(opt.batchSize):random(1,SEQS)
 
 for k=1, opt.nIteration do 
 
-    local inputs = {}
+  local inputs = {}
 
-    indices = offsets:clone()
-    indices:add(-1)
-    indices:mul(opt.rho)
-    indices:add(1)
+  indices = offsets:clone()
+  indices:add(-1)
+  indices:mul(opt.rho)
+  indices:add(1)
    
    -- local inputs=torch.LongTensor(opt.rho,opt.batchSize,COLS)
-    for step=1, opt.rho do
-	inputs[step]= inputs[step] or data.new()
-   	inputs[step]:index(data,1,indices)
-	indices:add(1)
-    end
+  for step=1, opt.rho do
+    inputs[step]= inputs[step] or data.new()
+    inputs[step]:index(data,1,indices)
+    indices:add(1)
+  end
 
     --local targets=torch.LongTensor(opt.rho,numPredict)
-    targets = labels.new()
-    targets:index(labels,1,offsets)
+  targets = labels.new()
+  targets:index(labels,1,offsets)
 
-    offsets:add(1)
-    offsets[offsets:gt(SEQS)]=1
+  offsets:add(1)
+  offsets[offsets:gt(SEQS)]=1
 
-    local outputs = lm:forward(inputs)    
+  local outputs = lm:forward(inputs)    
 
-    local err = criterion:forward(outputs:float(),targets:float())
+  local err = criterion:forward(outputs:float(),targets:float())
 
-    -- print('Iter: '.. k ..' Err: '.. err)
+  if(k<10000)
+    print('Iter: '.. k ..' Err: '.. err)
+  end
+  
+  lm:zeroGradParameters()
 
-    if k<3
-       print('Good') 
+  local gradOutputs = criterion:backward(outputs,targets)
+  local gradInputs = lm:backward(inputs,gradOutputs)
+    
+  lm:updateParameters(opt.lr)
+
+  if (k>10000 and k % 1000 ==0) or k==opt.nIteration
+      print('Iter: '.. k ..' Err: '.. err)
+      filename=string.format('./checkpoint/net_%f.bin',k);
+      torch.save(filename,lm);
+  end 
+
+  if k % opt.subIteration ==0 then
+    local datafile = datadir:next() 
+    local targetfile = targetdir:next()
+
+    if (not datafile) or (not targetfile) then
+      datadir:close()
+      targetdir:close()
+
+      local datadir = lfs.dir(datapath)
+      local datafile = datadir:next() 
+
+      local targetdir = lfs.dir(targetpath)
+      local targetfile = targetdir:next()
     end
-    
-    lm:zeroGradParameters()
 
-    local gradOutputs = criterion:backward(outputs,targets)
-    local gradInputs = lm:backward(inputs,gradOutputs)
-    
-    lm:updateParameters(opt.lr)
+    local data = torch.load(datafile)
+    local labels = torch.load(targetfile)
 
-    if (k>10000 and k % 1000 ==0) or k==opt.nIteration
-       print('Iter: '.. k ..' Err: '.. err)
-       filename=string.format('./checkpoint/net_%f.bin',k);
-       torch.save(filename,lm);
-    end 
+    COLS = data:size(2)
+    SEQS = labels:size(1)
+    ROWS = SEQS*6;
 
-    if k % 10 == 0 then collectgarbage() end
+    if opt.cuda then
+      data=data:cuda()
+      labels=labels:cuda() 
+    end
+
+    offsets = torch.LongTensor(opt.batchSize):random(1,SEQS)
+  end
+
+  if k % 10 == 0 then collectgarbage() end
 end
+
+datadir:close()
+targetdir:close()
 
 -- torch.save('net.bin', lm)
 
