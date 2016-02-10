@@ -51,19 +51,7 @@ for i=1:1:numFrame
     I=mat2gray(imread(str));
     I_original = adapthisteq(I);
     I= imcomplement(I_original);
-    
-    %%% load tracking ground truth %%%
-    str=sprintf('../data/%s/%s/%02d_GT/TRA/man_track%02d.tif',cellName,dataset,sq,i-1);
-    track_lab_raw=imread(str);
-    track_lab=zeros(dimx,dimy);
-    track_id = unique(nonzeros(track_lab_raw));
-    for k=1:1:numel(track_id)
-        tid=track_id(k);
-        rgIdx=find(track_lab_raw==tid);
-        track_lab(rgIdx(1))=tid;
-    end
-    clear rgIdx track_lab_raw track_id
-    
+
     %%% load segmentation result %%%
 
     str=sprintf('%s/prob_%d.tif',probPath,i);
@@ -73,7 +61,26 @@ for i=1:1:numFrame
     %str=sprintf('../data/%s/%s/%02d_SEG/%d.tif',cellName,dataset,sq,i);
     %bw=imread(str);
     %bw=bw>0;
-    bw=imfill(bw,'holes');
+    bw=imfill(bw,'holes');    
+
+
+    %%% load tracking ground truth %%%
+    str=sprintf('../data/%s/%s/%02d_GT/TRA/man_track%02d.tif',cellName,dataset,sq,i-1);
+    track_lab_raw=imread(str);
+
+    fn=track_lab_raw;
+    fn(bw)=0;
+
+    track_lab_raw(~bw)=0;
+
+    track_lab=zeros(dimx,dimy);
+    track_id = unique(nonzeros(track_lab_raw));
+    for k=1:1:numel(track_id)
+        tid=track_id(k);
+        rgIdx=find(track_lab_raw==tid);
+        track_lab(rgIdx(1))=tid;
+    end
+    clear rgIdx track_lab_raw track_id
 
     %%% loop through each region %%% 
     cc=bwconncomp(bw);
