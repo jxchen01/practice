@@ -2,7 +2,7 @@
 cellName='N2DL-HeLa';
 dataset='train';
 sq=2;
-numFrame=92;
+numFrame=45;
 maxMigration=60;
 seqLength=6;
 
