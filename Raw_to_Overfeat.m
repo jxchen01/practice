@@ -1,3 +1,5 @@
+probPath='/home/jchen16/u-net-compiled/HeLa/02_RES/35000';
+rescaleSize=0.5;
 cellName='N2DL-HeLa';
 dataset='train';
 sq=2;
@@ -63,9 +65,14 @@ for i=1:1:numFrame
     clear rgIdx track_lab_raw track_id
     
     %%% load segmentation result %%%
-    str=sprintf('../data/%s/%s/%02d_SEG/%d.tif',cellName,dataset,sq,i);
-    bw=imread(str);
-    bw=bw>0;
+
+    str=sprintf('%s/prob_%d.tif',probPath,i);
+    bw=mat2gray(imread(str));
+    bw=im2bw(bw,graythresh(bw));
+    bw=imresize(bw,rescaleSize);
+    %str=sprintf('../data/%s/%s/%02d_SEG/%d.tif',cellName,dataset,sq,i);
+    %bw=imread(str);
+    %bw=bw>0;
     bw=imfill(bw,'holes');
 
     %%% loop through each region %%% 
