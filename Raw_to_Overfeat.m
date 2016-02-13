@@ -70,8 +70,12 @@ for i=1:1:numFrame
 
     fn=track_lab_raw;
     fn(bw)=0;
+    fn_candi=unique(nonzeros(fn(:)));
 
     track_lab_raw(~bw)=0;
+    tp_idx=unique(nonzeros(track_lab_raw(:)));
+    
+    fn_idx=setdiff(fn_candi,tp_idx);
 
     track_lab=zeros(dimx,dimy);
     track_id = unique(nonzeros(track_lab_raw));
@@ -92,6 +96,51 @@ for i=1:1:numFrame
     segFrame=cell(1,0);
     cellFrame=cell(1,0);
     idMap=[];
+    
+    %%%%% false negative region first %%%%%
+    for k=1:1:numel(fn_idx)
+        idx=fn_idx(k);
+        sc=ismember(fn,idx);
+        a=regionprops(sc,'Centroid','Area','MajorAxisLength','MinorAxisLength','Orientation');
+        
+        im_region = I_original;
+        mask = imdilate(sc,se);
+        im_region(~mask)=0;
+        x0=round(a.Centroid(2));y0=round(a.Centroid(1));
+        tmp=zeros(patchSize,patchSize);
+        h=min([x0-1,y0-1,20,dimx-x0,dimy-y0]);
+        tmp(halfPatch-h:1:halfPatch+h, halfPatch-h:1:halfPatch+h)=...
+            im_region(x0-h:1:x0+h,y0-h:1:y0+h);
+        tmp=imresize(tmp,[overFeatSize,overFeatSize]);
+        tmp=mat2gray(tmp);
+        
+        SegPatchIdx=SegPatchIdx+1;
+        rgb=cat(3,tmp,tmp,tmp);
+        str=sprintf('%s/%03d.tif',str2,SegPatchIdx);
+        imwrite(rgb,str);
+        
+        clear im_region mask tmp h x0 y0
+        
+        topo=[a.Area,a.MajorAxisLength,a.MinorAxisLength,a.Orientation];
+        
+        tmpCell=struct('seg',sc,'id',idx,'patch',SegPatchIdx,'parent',[],...
+            'child',[],'Centroid',a.Centroid,'props',topo);
+        segFrame = cat(2,segFrame,tmpCell);
+        clear tmpCell 
+        
+        CellPatchIdx = CellPatchIdx+1;
+        str=sprintf('%s/%03d.tif',str1,CellPatchIdx);
+        imwrite(rgb,str);
+        
+        tmpCell = struct('seg',sc,'id',idx,'patch',CellPatchIdx,'parent',[],...
+            'child',[],'Centroid',a.Centroid,'props',topo);
+        cellFrame=cat(2,cellFrame,tmpCell);
+        idMap=cat(2,idMap,idx);
+        
+        clear tmpCell sc topo 
+    end
+    clear a 
+    
     for k=1:1:numRegion     
         sc=ismember(labmat,k);
         idx=unique(nonzeros(track_lab(sc)));
