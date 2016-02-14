@@ -19,6 +19,9 @@ end
 SEQS=math.ceil(i/7);
 ROWS=SEQS*6;
 
+print(SEQS)
+print(ROWS)
+
 iter=1;
 while file do
 
