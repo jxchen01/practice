@@ -197,7 +197,7 @@ for k=1, opt.nIteration do
     
     	lm:updateParameters(opt.lr)
 
-    	if innerk % 10 == 0 then collectgarbage() end 
+    	if innerK % 10 == 0 then collectgarbage() end 
 
     end
 
