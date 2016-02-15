@@ -96,10 +96,8 @@ end
 print('Good')
 
 while datafile and targetfile do
-  f_data = datadir:next()
-  f_target = targetdir:next()
-  print(f_data)
-  print(f_target)
+  datafile = datadir:next()
+  targetfile = targetdir:next()
 end
 assert(not pcall(datadir.next, datadir))
 
