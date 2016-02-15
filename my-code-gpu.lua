@@ -231,9 +231,6 @@ for k=1, opt.nIteration do
       attr_data = lfs.attributes (f_data)
     end
 
-    datafile = datadir:next() 
-    targetfile = targetdir:next()
-
     data = torch.load(f_data)
     labels = torch.load(f_target)
 
