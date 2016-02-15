@@ -55,9 +55,6 @@ numPredict=5
 local datapath=string.format('%s/%s/%s',fpath,trainType,'data');
 local targetpath=string.format('%s/%s/%s',fpath,trainType,'target');
 
-for i = 1, 40 do
-
-
 local iter_data, datadir = lfs.dir(datapath)
 local datafile = datadir:next()
 
@@ -94,21 +91,8 @@ end
 print('Good')
 
 
-count=0
-while datafile and targetfile do
-  datafile = datadir:next()
-  targetfile = targetdir:next()
-  count=count+1
-  print(count)
-  collectgarbage()
-end
-assert(not pcall(datadir.next, datadir))
-
-end
-
 print('start to build model...')
 
---[[
 
 --[[Model]]--
 
@@ -172,8 +156,6 @@ for k=1, opt.nIteration do
 
     for innerK=1, opt.subIteration  do
 
-      print(innerK)
-
       local inputs = {}
 
     	indices = offsets:clone()
@@ -181,7 +163,7 @@ for k=1, opt.nIteration do
     	indices:mul(opt.rho)
     	indices:add(1)
    
-   	-- local inputs=torch.LongTensor(opt.rho,opt.batchSize,COLS)
+   	  -- local inputs=torch.LongTensor(opt.rho,opt.batchSize,COLS)
     	for step=1, opt.rho do
         inputs[step]= inputs[step] or data.new()
    	    inputs[step]:index(data,1,indices)
@@ -225,6 +207,8 @@ for k=1, opt.nIteration do
     datafile = datadir:next()
     targetfile = targetdir:next()
     if (not datafile) or (not targetfile) then
+      assert(not pcall(datadir.next, datadir))
+      assert(not pcall(targetdir.next, targetdir))
       iter_data, datadir = lfs.dir(datapath)
       iter_target, targetdir = lfs.dir(targetpath)
       datafile = datadir:next()
@@ -247,8 +231,8 @@ for k=1, opt.nIteration do
       attr_data = lfs.attributes (f_data)
     end
 
-    local datafile = datadir:next() 
-    local targetfile = targetdir:next()
+    datafile = datadir:next() 
+    targetfile = targetdir:next()
 
     data = torch.load(f_data)
     labels = torch.load(f_target)
@@ -283,7 +267,6 @@ local outputs=lm:forward(inputs)
 torch.save('write.dat', outputs:float(),'ascii')
 torch.save('write.bin', outputs:float())
 
---]]
 
 --print(outputs)
 --print(type(outputs))
