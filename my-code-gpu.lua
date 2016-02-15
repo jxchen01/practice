@@ -89,7 +89,7 @@ if opt.cuda then
   labels=labels:cuda()
 end
 print('Good')
-
+collectgarbage()
 
 print('start to build model...')
 
@@ -134,7 +134,6 @@ if opt.uniform > 0 then
    end
 end
 
---criterion = nn.SequencerCriterion(nn.MSECriterion())
 criterion = nn.MSECriterion()
 
 -- linear decay
@@ -181,10 +180,8 @@ for k=1, opt.nIteration do
 
     	local err = criterion:forward(outputs:float(),targets:float())
 
- --   if k<10000 then
- --   	print('Iter: '.. k ..' Err: '.. err)
- --   end
-  
+      print('Iter: '.. k .. '  Inner: '.. innerK.. ' Err: '.. err)
+        
     	lm:zeroGradParameters()
 
     	local gradOutputs = criterion:backward(outputs,targets)
@@ -196,10 +193,9 @@ for k=1, opt.nIteration do
 
     end
 
-    print('done')
   
-    if (k % 53 ==0) then
-      print('Iter: '.. k ..' Err: '.. err)
+    if (k % 50 ==0) then
+      --print('Iter: '.. k ..' Err: '.. err)
       filename=string.format('%s/checkpoint/net_%f.bin',lfs.currentdir(),k);
       torch.save(filename,lm);
     end
