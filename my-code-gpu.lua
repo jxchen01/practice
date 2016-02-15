@@ -55,8 +55,8 @@ numPredict=5
 local datapath=string.format('%s/%s/%s',fpath,trainType,'data');
 local targetpath=string.format('%s/%s/%s',fpath,trainType,'target');
 
-print(datapath)
-print(targetpath)
+for i = 1, 40 do
+
 
 local iter_data, datadir = lfs.dir(datapath)
 local datafile = datadir:next()
@@ -95,7 +95,17 @@ end
 print('Good')
 collectgarbage()
 
+while datafile and targetfile do
+  f_data = datadir:next()
+  t_target = targetdir:next()
+end
+assert(not pcall(datadir.next, datadir))
+
+end
+
 print('start to build model...')
+
+--[[
 
 --[[Model]]--
 
@@ -269,6 +279,8 @@ local outputs=lm:forward(inputs)
 
 torch.save('write.dat', outputs:float(),'ascii')
 torch.save('write.bin', outputs:float())
+
+--]]
 
 --print(outputs)
 --print(type(outputs))
