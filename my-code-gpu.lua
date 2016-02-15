@@ -93,12 +93,14 @@ if opt.cuda then
 end
 print('Good')
 
+
 count=0
 while datafile and targetfile do
   datafile = datadir:next()
   targetfile = targetdir:next()
   count=count+1
   print(count)
+  collectgarbage()
 end
 assert(not pcall(datadir.next, datadir))
 
