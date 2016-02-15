@@ -60,6 +60,7 @@ for i = 1, 40 do
 
 local iter_data, datadir = lfs.dir(datapath)
 local datafile = datadir:next()
+
 local f_data = datapath..'/'..datafile
 local attr_data = lfs.attributes (f_data)
 print(f_data)
@@ -93,7 +94,6 @@ if opt.cuda then
   labels=labels:cuda()
 end
 print('Good')
-collectgarbage()
 
 while datafile and targetfile do
   f_data = datadir:next()
