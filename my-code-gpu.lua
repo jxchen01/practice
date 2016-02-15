@@ -63,12 +63,10 @@ local datafile = datadir:next()
 
 local f_data = datapath..'/'..datafile
 local attr_data = lfs.attributes (f_data)
-print(f_data)
 while datafile == "." or datafile == ".." or  attr_data.mode == "directory" do
     datafile = datadir:next()
     f_data = datapath..'/'..datafile
     attr_data = lfs.attributes (f_data)
-    print('w:  '..f_data)
 end
 
 local iter_target, targetdir = lfs.dir(targetpath)
@@ -95,9 +93,12 @@ if opt.cuda then
 end
 print('Good')
 
+count=0
 while datafile and targetfile do
   datafile = datadir:next()
   targetfile = targetdir:next()
+  count=count+1
+  print(count)
 end
 assert(not pcall(datadir.next, datadir))
 
