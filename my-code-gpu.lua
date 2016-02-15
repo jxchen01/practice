@@ -157,10 +157,11 @@ offsets = torch.LongTensor(opt.batchSize):random(1,SEQS)
 
 for k=1, opt.nIteration do 
 
-    local innerK=0
+    for innerK=1, opt.subIteration  do
 
-    while innerK< opt.subIteration and datafile and targetfile do 
-    	local inputs = {}
+      print(innerK)
+
+      local inputs = {}
 
     	indices = offsets:clone()
     	indices:add(-1)
@@ -169,10 +170,10 @@ for k=1, opt.nIteration do
    
    	-- local inputs=torch.LongTensor(opt.rho,opt.batchSize,COLS)
     	for step=1, opt.rho do
-    	    inputs[step]= inputs[step] or data.new()
+        inputs[step]= inputs[step] or data.new()
    	    inputs[step]:index(data,1,indices)
-    	    indices:add(1)
-        end
+        indices:add(1)
+      end
 
     	--local targets=torch.LongTensor(opt.rho,numPredict)
     	targets = labels.new()
@@ -188,7 +189,6 @@ for k=1, opt.nIteration do
  --   if k<10000 then
  --   	print('Iter: '.. k ..' Err: '.. err)
  --   end
-    	print(k)
   
     	lm:zeroGradParameters()
 
@@ -197,66 +197,61 @@ for k=1, opt.nIteration do
     
     	lm:updateParameters(opt.lr)
 
-    	if (k>10000 and k % 1000 ==0) or k==opt.nIteration then
-    	    print('Iter: '.. k ..' Err: '.. err)
-      	    filename=string.format('%s/checkpoint/net_%f.bin',lfs.currentdir(),k);
-      	    torch.save(filename,lm);
-       	end
-
-    	if k % 10 == 0 then collectgarbage() end 
+    	if innerk % 10 == 0 then collectgarbage() end 
 
     end
+
+    print('done')
   
-        -- if not datadir then
- 	--     iter_data, datadir = lfs.dir(datapath)
- 	-- end
-        -- print(datafile)
-	datafile = datadir:next()
-	f_data = datapath..'/'..datafile
-	attr_data = lfs.attributes (f_data)
-        print(f_data)
-	while datafile == "." or datafile == ".." or  attr_data.mode == "directory" do
-           -- if not datafile then
-		-- datadir:close()
-	   --	iter_data, datadir = lfs.dir(datapath)
-	   --  end
-    	    datafile = datadir:next()
-    	    f_data = datapath..'/'..datafile
-    	    attr_data = lfs.attributes (f_data)
-            print('w: '..f_data)
-	end
-
- 	targetfile = targetdir:next()
- 	f_target = targetpath..'/'..targetfile
-	attr_target = lfs.attributes(f_target)
-	while targetfile == "." or targetfile == ".." or  attr_target.mode == "directory" do
-    	    if not targetfile then
-                --targetdir:close()
-                iter_target, targetdir = lfs.dir(targetpath)
-            end
- 	    targetfile = targetdir:next()
-    	    f_target = targetpath..'/'..targetfile
-    	    attr_target = lfs.attributes (f_target)
-	end
-
-    	local datafile = datadir:next() 
-    	local targetfile = targetdir:next()
-
-        data = torch.load(f_data)
-        labels = torch.load(f_target)
-
-    	COLS = data:size(2)
-    	SEQS = labels:size(1)
-    	ROWS = SEQS*6;
-
-    	if opt.cuda then
-      	    data=data:cuda()
-            labels=labels:cuda() 
-    	end
-
-    	offsets = torch.LongTensor(opt.batchSize):random(1,SEQS)
-    	collectgarbage()
+    if (k % 53 ==0) then
+      print('Iter: '.. k ..' Err: '.. err)
+      filename=string.format('%s/checkpoint/net_%f.bin',lfs.currentdir(),k);
+      torch.save(filename,lm);
     end
+
+    datafile = datadir:next()
+    targetfile = targetdir:next()
+    if (not datafile) or (not targetfile) then
+      iter_data, datadir = lfs.dir(datapath)
+      iter_target, targetdir = lfs.dir(targetpath)
+      datafile = datadir:next()
+      targetfile = targetdir:next()
+    end
+
+    f_target = targetpath..'/'..targetfile
+    attr_target = lfs.attributes(f_target)
+    while targetfile == "." or targetfile == ".." or  attr_target.mode == "directory" do
+      targetfile = targetdir:next()
+      f_target = targetpath..'/'..targetfile
+      attr_target = lfs.attributes (f_target)
+    end
+
+    f_data = datapath..'/'..datafile
+    attr_data = lfs.attributes (f_data)
+    while datafile == "." or datafile == ".." or  attr_data.mode == "directory" do
+      datafile = datadir:next()
+      f_data = datapath..'/'..datafile
+      attr_data = lfs.attributes (f_data)
+    end
+
+    local datafile = datadir:next() 
+    local targetfile = targetdir:next()
+
+    data = torch.load(f_data)
+    labels = torch.load(f_target)
+
+    COLS = data:size(2)
+    SEQS = labels:size(1)
+    ROWS = SEQS*6;
+
+    if opt.cuda then
+      data=data:cuda()
+      labels=labels:cuda() 
+    end
+
+    offsets = torch.LongTensor(opt.batchSize):random(1,SEQS)
+    collectgarbage()
+    
 end
 
 datadir:close()
