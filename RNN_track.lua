@@ -1,5 +1,5 @@
 require 'rnn'
-lfs=require('lfs')
+--lfs=require('lfs')
 matio=require('matio')
 
 version = 1
@@ -19,7 +19,8 @@ cmd:option('--useDevice', 2, 'sets the device (GPU) to use')
 cmd:option('--rho', 6, 'back-propagate through time (BPTT) for rho time-steps')
 
 -- file path
-cmd:option('--fpath','/home/jchen16/code/Tracking_System/code/train','directory to data')
+cmd:option('--fpath','/home/jchen16/code/Tracking_System/code/checkpoint/train/seg/data/data_seg_1.t7','directory to data')
+cmd:option('--netpath','/home/jchen16/code/Tracking_System/code/checkpoint/seg/net_3650.000000.bin','directory to model')
 
 cmd:text()
 opt = cmd:parse(arg or {})
@@ -50,7 +51,7 @@ collectgarbage()
 --[[Model]]--
 
 -- RNN model
-lm = torch.load('net.bin');
+lm = torch.load(opt.netpath);
 
 print('model is loaded')
 
@@ -186,9 +187,9 @@ while total<SEQS do
     offsets:add(1)
     offsets[offsets:gt(SEQS)]=1
   end
-
+  print(total)
   collectgarbage()
 end
 
-matio.save('write.mat',results)
+matio.save('results.mat',results)
 
