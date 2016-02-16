@@ -78,9 +78,9 @@ while total<SEQS do
 
   local outputs=lm:forward(inputs)
 
-  for key, val in ipairs(offsets) do
+  for tt=1,opt.batchSize do
     for p=1,numPredict do
-      results[val][p]=outputs[key][p]:float()
+      results[offsets[tt]:int()][p]=outputs[tt][p]:float()
     end
   end
 
