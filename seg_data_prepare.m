@@ -66,18 +66,18 @@ for i=1:1:numFrame
         a = regionprops(sc,'Centroid','Area','MajorAxisLength','MinorAxisLength','Orientation');
         x0=round(a.Centroid(2));y0=round(a.Centroid(1));
         
-        %%% create image patch %%%
-        tmp=zeros(patchSize,patchSize);
-        h=min([x0-1,y0-1,20,dimx-x0,dimy-y0]);
-        tmp(halfPatch-h:1:halfPatch+h, halfPatch-h:1:halfPatch+h)=...
-            im_region(x0-h:1:x0+h,y0-h:1:y0+h);
-        tmp=imresize(tmp,[overFeatSize,overFeatSize]);
-        tmp=mat2gray(tmp);
-        
+%         %%% create image patch %%%
+%         tmp=zeros(patchSize,patchSize);
+%         h=min([x0-1,y0-1,20,dimx-x0,dimy-y0]);
+%         tmp(halfPatch-h:1:halfPatch+h, halfPatch-h:1:halfPatch+h)=...
+%             im_region(x0-h:1:x0+h,y0-h:1:y0+h);
+%         tmp=imresize(tmp,[overFeatSize,overFeatSize]);
+%         tmp=mat2gray(tmp);
+%         
         SegPatchIdx=SegPatchIdx+1;
-        rgb=cat(3,tmp,tmp,tmp);
-        str=sprintf('%s/%03d.tif',str2,SegPatchIdx);
-        imwrite(rgb,str);
+%         rgb=cat(3,tmp,tmp,tmp);
+%         str=sprintf('%s/%03d.tif',str2,SegPatchIdx);
+%         imwrite(rgb,str);
         
         topo=[a.Area,a.MajorAxisLength,a.MinorAxisLength,a.Orientation];
         tmpCell=struct('seg',sc,'id',[],'patch',SegPatchIdx,'parent',[],...
