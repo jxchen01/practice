@@ -77,10 +77,11 @@ while total<SEQS do
   end
 
   local outputs=lm:forward(inputs)
+  local foutput=outputs:float()
 
   for tt=1,opt.batchSize do
     for p=1,numPredict do
-      results[offsets[tt]][p]=outputs[tt][p]
+      results[offsets[tt]][p]=foutput[tt][p]
     end
   end
 
