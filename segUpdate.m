@@ -7,6 +7,9 @@ dataset='train';
 sq=2;
 
 str_seg_patch=sprintf('../data/%s/%s/%02d_SEG_PATCH/%02d',cellName,dataset,sq,frameIdx);
+overfeat_path='/home/jchen16/overfeat/src/overfeat';
+tmp_path='./tmp_overfeat/';
+feature_path=sprintf('../data/%s/%s/%02d_SEG_PATCH_OUT/',cellName,dataset,sq);
 
 se=strel('disk',1);
 se5=strel('disk',5,0);
@@ -23,14 +26,18 @@ for i=1:1:tarNum
         %%%% false merge %%%%
         bw=tarList{i}.seg;
         bw=imerode(bw,se);
-        ind=find(bw);
-        [xx,yy]=ind2sub(sz,ind);
-        idx = kmeans([xx,yy],numCell);
-        lab=zeros(sz);
-        for j=1:1:numel(idx)
-            lab(xx(j),yy(j))=idx(j);
-        end
-        clear ind xx yy bw
+        
+        lab = cutRegion(bw,numCell);
+        
+        %%%% classic kmeans %%%%
+%         ind=find(bw);
+%         [xx,yy]=ind2sub(sz,ind);
+%         idx = kmeans([xx,yy],numCell);
+%         lab=zeros(sz);
+%         for j=1:1:numel(idx)
+%             lab(xx(j),yy(j))=idx(j);
+%         end
+%         clear ind xx yy bw
         
         %%%% replace i-th element %%%%%
         bw=ismember(lab,1);
@@ -57,22 +64,23 @@ for i=1:1:tarNum
         
         numNewCell=numNewCell+1;
         rgb=cat(3,tmp,tmp,tmp);
-        str=sprintf('%s/%03d.tif',str_seg_patch,tarNum+numNewCell);
-        imwrite(rgb,str);
+        str_patch=sprintf('%s/%03d.tif',str_seg_patch,tarNum+numNewCell);
+        imwrite(rgb,str_patch);
         
         %%%%%%%%%%%%%%%%%%%%%
-        %%% run overfeat here
+        %%% run overfeat 
         %%%%%%%%%%%%%%%%%%%%%
-        
-        
-        
-        %%%%%%%%%%%%%%%%%%%%%
-        
+        cm1=['rm ',tmp_path,'*'];
+        system(cm1);
+        cm2=['cp ',str_patch,' ',tmp_path];
+        system(cm2);
+        cm3=[overfeat_path,' -i ',tmp_path,' -o ',feature_path];
+        system(cm3);
+        %%%%%%%%%%%%%%%%%%%%% 
         topo=[a.Area,a.MajorAxisLength,a.MinorAxisLength,a.Orientation];
         tarList{i}=struct('seg',bw,'id',[],'patch',tarNum+numNewCell,'parent',[],...
             'child',[],'Centroid',a.Centroid,'props',topo);
-        
-        
+               
         idxMap=zeros(1,numCell);
         idxMap(1)=i;
         for j=1:numCell-1
@@ -101,17 +109,19 @@ for i=1:1:tarNum
             
             numNewCell=numNewCell+1;
             rgb=cat(3,tmp,tmp,tmp);
-            str=sprintf('%s/%03d.tif',str_seg_patch,tarNum+numNewCell);
-            imwrite(rgb,str);
+            str_patch=sprintf('%s/%03d.tif',str_seg_patch,tarNum+numNewCell);
+            imwrite(rgb,str_patch);
             
             %%%%%%%%%%%%%%%%%%%%%
-            %%% run overfeat here
+            %%% run overfeat 
             %%%%%%%%%%%%%%%%%%%%%
-            
-            
-            
+            cm1=['rm ',tmp_path,'*'];
+            system(cm1);
+            cm2=['cp ',str_patch,' ',tmp_path];
+            system(cm2);
+            cm3=[overfeat_path,' -i ',tmp_path,' -o ',feature_path];
+            system(cm3);
             %%%%%%%%%%%%%%%%%%%%%
-            
             topo=[a.Area,a.MajorAxisLength,a.MinorAxisLength,a.Orientation];
             tmpCell=struct('seg',bw,'id',[],'patch',tarNum+numNewCell,'parent',[],...
                 'child',[],'Centroid',a.Centroid,'props',topo);

@@ -52,7 +52,7 @@ vMat=zeros(srcNum+1,tarNum+1);
 
 costMatIdx=zeros(srcNum,tarNum);
 counter=0;
-filename=['frame_',num2str(frameID),'.csv'];
+filename=['./RNN_data/frame_',num2str(frameID),'.csv'];
 fid=fopen(filename,'w');
 for j=1:1:tarNum
     c1=cellBlock{seqLength}{j}.Centroid;
@@ -73,7 +73,7 @@ for j=1:1:tarNum
         end
         
         counter=counter+1;
-        costMatIdx(j,k)=counter; 
+        costMatIdx(k,j)=counter; 
         
         str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,frameID,j);
         M=dlmread(str,'');
@@ -125,13 +125,40 @@ end
 fclose(fid);
 
 %%%% invoke RNN %%%%
-paraFile=['frame_',num2str(frameID),'_para.dat'];
-cmm=['th my-compute-gpu.lua --useDevice 2 --inPath %s --outPath %s',filename,paraFile];
+cm1=sprintf('convert_frame.lua --name ''frame_%d''',frameID);
+system(cm1)
+RNN_name=['frame_',num2str(frameID),'.t7'];
+cmm=['th RNN_track.lua --useDevice 2 --fPath %s ',RNN_name];
 system(cmm)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% fetch RNN results %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
+rnnResult=importdata(['./RNN_result/results_',num2str(frameID),'.mat']);
+leavingCost=zeros(srcNum,tarNum);
+enteringCost=zeros(srcNum,tarNum);
+for j=1:1:tarNum
+    for k=1:1:srcNum
+        if(costMat(k,j)>-1e-5)
+            costMat(k,j)=rnnResult(costMatIdx(k,j),1);
+            uMat(k,j)=rnnResult(costMatIdx(k,j),2);
+            vMat(k,j)=rnnResult(costMatIdx(k,j),3);
+            leavingCost(k,j)=rnnResult(costMatIdx(k,j),4);
+            enteringCost(k,j)=rnnResult(costMatIdx(k,j),5);
+        end
+    end
+end
+for j=1:1:tarNum
+    pv=enteringCost(:,j);
+    pv=nonzeros(pv);
+    costMat(end,j)=mean(pv);
+end
+for k=1:1:srcNum
+    pv=leavingCost(k,:);
+    pv=nonzeros(pv);
+    costMat(k,end)=mean(pv);
+end
+
 costMat(srcNum+1,tarNum+1)=-1;
 
 uMat(:,end)=1;
@@ -141,18 +168,6 @@ uMat(end,end)=0;
 vMat(:,end)=1;
 vMat(end,:)=1;
 vMat(end,end)=0;
-
-% % compute no-matching cost
-% for i=1:1:srcNum
-%     if(costMat(i,tarNum+1)==0)
-%         costMat(i,tarNum+1)=dumCost(srcCellList,srcMat,i,sz);
-%     end
-% end
-% for j=1:1:tarNum
-%     if(costMat(srcNum+1,j)==0)
-%         costMat(srcNum+1,j)=dumCost(tarCellList,tarMat,j,sz);
-%     end
-% end
 
 % %%% toy example %%%%
 % srcNum=3; tarNum=3;
@@ -168,8 +183,6 @@ vMat(end,end)=0;
 %         0.5, 1, 1, 1;
 %         1,   1, 1, 1;
 %         1,   1, 1, 0];
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%% perform matching on the whole region %%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
