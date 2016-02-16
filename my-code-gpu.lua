@@ -1,5 +1,6 @@
 require 'rnn'
 lfs=require('lfs')
+matio=require('matio')
 
 version = 1
 
@@ -263,7 +264,7 @@ torch.save('write.bin', outputs:float())
 print(outputs:float())
 print(type(outputs:float()))
 
-writeFloat(outputs:float())
+matio.save('write.mat',outputs:float())
 --[[
 local myfile = hdf5.open('write.h5','w')
 myfile:write('path/to/data',outputs)
