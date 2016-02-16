@@ -80,7 +80,7 @@ while total<SEQS do
 
   for tt=1,opt.batchSize do
     for p=1,numPredict do
-      results[offsets[tt]:int()][p]=outputs[tt][p]:float()
+      results[offsets[tt]][p]=outputs[tt][p]
     end
   end
 
