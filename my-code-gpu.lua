@@ -1,6 +1,6 @@
 require 'rnn'
 lfs=require('lfs')
-matio=require('matio')
+--matio=require('matio')
 
 version = 1
 
@@ -248,23 +248,22 @@ end
 datadir:close()
 targetdir:close()
 
-local inputs = {}
+--local inputs = {}
 
-for step=1, opt.rho do
-   inputs[step]= inputs[step] or data.new()
-   inputs[step]:index(data,1,offsets)
-   offsets:add(1)
-end
+--for step=1, opt.rho do
+--   inputs[step]= inputs[step] or data.new()
+--   inputs[step]:index(data,1,offsets)
+--   offsets:add(1)
+--end
 
-local outputs=lm:forward(inputs)
+--local outputs=lm:forward(inputs)
 
-torch.save('write.dat', outputs:float(),'ascii')
-torch.save('write.bin', outputs:float())
+--matio.save('write.mat',outputs:float())
 
-print(outputs:float())
-print(type(outputs:float()))
+--print(outputs:float())
+--print(type(outputs:float()))
 
-matio.save('write.mat',outputs:float())
+
 --[[
 local myfile = hdf5.open('write.h5','w')
 myfile:write('path/to/data',outputs)
