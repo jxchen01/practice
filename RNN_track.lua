@@ -58,7 +58,7 @@ print('model is loaded')
 --[[Results]]--
 local total=0;
 local offsets = torch.LongTensor(opt.batchSize)
-local results=torch.LongTensor(SEQS+opt.batchSize,numPredict)
+local results=torch.FloatTensor(SEQS+opt.batchSize,numPredict)
 i=0; offsets:apply(function() i = i + 1; return i end)
 
 while total<SEQS do
