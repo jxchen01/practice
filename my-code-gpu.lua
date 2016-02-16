@@ -19,8 +19,8 @@ cmd:option('--cutoffNorm', -1, 'max l2-norm of concatenation of all gradParam te
 cmd:option('--batchSize', 32, 'number of examples per batch')
 cmd:option('--cuda', true, 'use CUDA')
 cmd:option('--useDevice', 2, 'sets the device (GPU) to use')
-cmd:option('--nIteration', 80000, 'maximum number of iteration to run')
-cmd:option('--subIteration',5,'number of training steps in each subset')
+cmd:option('--nIteration', 2000, 'maximum number of iteration to run')
+cmd:option('--subIteration',50,'number of training steps in each subset')
 cmd:option('--maxTries', 50, 'maximum number of epochs to try to find a better local minima for early-stopping')
 cmd:option('--silent', false, 'don\'t print anything to stdout')
 cmd:option('--uniform', 0.1, 'initialize parameters using uniform distribution between -uniform and uniform. -1 means default initialization')
@@ -98,7 +98,7 @@ print('start to build model...')
 
 -- RNN model
 lm = nn.Sequential()
-local hiddenSize= {512,1024,1024,512}
+local hiddenSize= {512,512,512,512,512}
 local inputSize = 512
 
 lm:add(nn.Sequencer(nn.Linear(COLS,inputSize)))
