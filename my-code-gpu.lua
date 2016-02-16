@@ -260,9 +260,8 @@ local outputs=lm:forward(inputs)
 torch.save('write.dat', outputs:float(),'ascii')
 torch.save('write.bin', outputs:float())
 
-
---print(outputs)
---print(type(outputs))
+print(outputs)
+print(type(outputs))
 
 --[[
 local myfile = hdf5.open('write.h5','w')
