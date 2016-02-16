@@ -19,7 +19,7 @@ cmd:option('--useDevice', 2, 'sets the device (GPU) to use')
 cmd:option('--rho', 6, 'back-propagate through time (BPTT) for rho time-steps')
 
 -- file path
-cmd:option('--fpath','/home/jchen16/code/Tracking_System/code/checkpoint/train/seg/data/data_seg_1.t7','directory to data')
+cmd:option('--fpath','/home/jchen16/code/Tracking_System/code/train/seg/data/data_seg_1.t7','directory to data')
 cmd:option('--netpath','/home/jchen16/code/Tracking_System/code/checkpoint/seg/net_3650.000000.bin','directory to model')
 
 cmd:text()
