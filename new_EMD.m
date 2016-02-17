@@ -119,6 +119,7 @@ for j=1:1:tarNum
 end
 fclose(fid);
 
+disp('invoking Torch for ENN')
 %%%% invoke RNN %%%%
 cm1=sprintf('convert_frame.lua --name ''frame_%d''',frameID);
 system(cm1)
@@ -126,6 +127,7 @@ RNN_name=['frame_',num2str(frameID),'.t7'];
 cmm=['th RNN_track.lua --useDevice 2 --fPath %s ',RNN_name];
 system(cmm)
 
+disp('Torch is done')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% fetch RNN results %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -246,11 +248,15 @@ if(isempty(weight) || isempty(beq) || isempty(Aeq))
     return
 end
 
+disp('ready for optimization')
+
 [xval,~,exitflag,output] = linprog(weight,[],[],Aeq,beq,lb,ub,[], options);
 if(exitflag~=1)
     disp(output.message);
     error('error in EMD optimization');
 end
+
+disp('optim done')
 
 %%% feasible matching
 matchMat=zeros(srcNum+1,tarNum+1);

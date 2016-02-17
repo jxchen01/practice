@@ -1,3 +1,4 @@
+probPath='/home/jchen16/u-net-compiled/HeLa/02_RES/35000';
 cellName='N2DL-HeLa';
 dataset='train';
 sq=2;
@@ -40,7 +41,7 @@ for i=1:1:numFrame
     I= imcomplement(I_original);
     
     %%% load segmentation result %%%
-    str=sprintf('../data/%s/%s/%02d_SEG/%d.tif',cellName,dataset,sq,i);
+    str=sprintf('%s/prob_%d.tif',probPath,i);
     bw=mat2gray(imread(str));
     bw=im2bw(bw,graythresh(bw));
     bw=imfill(bw,'holes');

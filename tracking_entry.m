@@ -34,8 +34,10 @@ for i=2:1:numFrame
     I=mat2gray(imread(str));
     I=adapthisteq(I);
     
+    disp('ready for EMD')
     cellBlock = new_EMD(cellBlock,i,opt);
 
+    disp('start post processing')
     [cellBlock{seqLength-1},cellBlock{seqLength}] = segUpdate(cellBlock{seqLength-1},...
         cellBlock{seqLength}, I,i);
 

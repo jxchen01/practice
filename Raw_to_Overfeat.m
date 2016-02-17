@@ -53,7 +53,6 @@ for i=1:1:numFrame
     I= imcomplement(I_original);
 
     %%% load segmentation result %%%
-
     str=sprintf('%s/prob_%d.tif',probPath,i);
     bw=mat2gray(imread(str));
     bw=im2bw(bw,graythresh(bw));
