@@ -12,7 +12,7 @@ opt=struct('cellName',cellName,'dataset',dataset,'sq',sq,'numFrame',...
 cellBlock=cell(1,seqLength);
 str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,1);
 S=load(str);
-cellBlock{seqLength}=S.segFrame;
+cellBlock{seqLength}=S.segFrame0;
 for i=1:1:numel(cellBlock{seqLength})
     cellBlock{seqLength}{i}.id=i;
 end
