@@ -91,7 +91,6 @@ while total<SEQS do
     offsets:add(1)
     offsets[offsets:gt(SEQS)]=1
   end
-  print(total)
   collectgarbage()
 end
 

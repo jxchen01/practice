@@ -126,8 +126,8 @@ if(status)
     disp(cm1)
     error('error in system operation');
 end
-RNN_name=['frame_',num2str(frameID),'.t7'];
-cmm=['th RNN_track.lua --useDevice 2 --fpath %s ',RNN_name];
+RNN_name=['./RNN_data/frame_',num2str(frameID),'.t7'];
+cmm=sprintf('th RNN_track.lua --useDevice 2 --fpath %s',RNN_name);
 status=system(cmm);
 if(status)
     disp(cmm)
