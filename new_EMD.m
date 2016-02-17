@@ -61,6 +61,7 @@ for j=1:1:tarNum
     for k=1:1:srcNum
         c2=cellBlock{seqLength-1}{k}.Centroid;
         if(norm(c1-c2)>opt.maxMigration)
+            costMat(k,j)=-1;
             continue;
         elseif(norm(c1-c2)<opt.simpleMatchDist && abs(cellBlock{seqLength}{j}.props(1)...
                 -cellBlock{seqLength-1}{k}.props(1))<opt.simpleMatchArea)
@@ -143,7 +144,7 @@ leavingCost=zeros(srcNum,tarNum);
 enteringCost=zeros(srcNum,tarNum);
 for j=1:1:tarNum
     for k=1:1:srcNum
-        if(costMat(k,j)>-1e-5)
+        if(costMatIdx(k,j)>0)
             costMat(k,j)=rnnResult(costMatIdx(k,j),1);
             uMat(k,j)=rnnResult(costMatIdx(k,j),2);
             vMat(k,j)=rnnResult(costMatIdx(k,j),3);
