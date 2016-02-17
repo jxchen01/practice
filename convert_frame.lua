@@ -20,17 +20,16 @@ ROWS=i;
 SEQS=i/6;
 
 local data=torch.Tensor(ROWS,COLS)
-local i,k=0,0
+local k=0
     
 for line in io.lines(f) do
-    i=i+1
     local l=line:split(',')
-        k=k+1
-        for key, val in ipairs(l) do
-            data[k][key]=val
-        end
+    k=k+1
+    for key, val in ipairs(l) do
+        data[k][key]=val
     end
 end
+
 
 local outpath=string.format('/home/jchen16/code/Tracking_System/code/RNN_data/%s.t7',opt.name)
 torch.save(outpath,data)
