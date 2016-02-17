@@ -17,6 +17,7 @@ cmd:option('--useDevice', 2, 'sets the device (GPU) to use')
 
 -- recurrent layer 
 cmd:option('--rho', 6, 'back-propagate through time (BPTT) for rho time-steps')
+cmd:option('--frame',1,'frame being processed')
 
 -- file path
 cmd:option('--fpath','/home/jchen16/code/Tracking_System/code/train/seg/data/data_seg_1.t7','directory to data')
@@ -94,5 +95,6 @@ while total<SEQS do
   collectgarbage()
 end
 
-matio.save('results.mat',results)
+outname=string.format('/home/jchen16/code/Tracking_System/code/RNN_result/results_%d,mat',opt.frame)
+matio.save(outname,results)
 

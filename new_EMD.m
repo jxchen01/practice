@@ -61,8 +61,8 @@ for j=1:1:tarNum
         c2=cellBlock{seqLength-1}{k}.Centroid;
         if(norm(c1-c2)>opt.maxMigration)
             continue;
-        elseif(norm(c1-c2)<opt.simpleMatchDist && abs(cellBlock{seqLength}{j}.topo(1)...
-                -cellBlock{seqLength-1}{k}.topo(1))<opt.simpleMatchArea)
+        elseif(norm(c1-c2)<opt.simpleMatchDist && abs(cellBlock{seqLength}{j}.props(1)...
+                -cellBlock{seqLength-1}{k}.props(1))<opt.simpleMatchArea)
             cellBlock{seqLength-1}{k}.child = j;
             cellBlock{seqLength}{j}.parent = k;
             costMat(k,:)=-1;
@@ -79,7 +79,7 @@ for j=1:1:tarNum
         M=dlmread(str,'');
         Mat=zeros(seqLength,M(1,1)+5);
         Mat(seqLength,1:M(1,1))=M(2,1:M(1,1));
-        Mat(seqLength,end-5:end-2)=cellBlock{seqLength}{j}.topo(:);
+        Mat(seqLength,end-5:end-2)=cellBlock{seqLength}{j}.props(:);
         Mat(seqLength,end-1:end)=c1(:);
         
         for t=seqLength-1:-1:1
@@ -89,7 +89,7 @@ for j=1:1:tarNum
                 str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',cellName,dataset,sq,t-seqLength+frameID,cellid);
                 M=dlmread(str,'');
                 Mat(t,1:M(1,1))=M(2,1:M(1,1));
-                Mat(t,end-5:end-2)=cellBlock{t}{cellid}.topo(:);
+                Mat(t,end-5:end-2)=cellBlock{t}{cellid}.props(:);
                 Mat(t,end-1:end)=c2(:);
                 
                 if(~isempty(cellBlock{t}{cellid}.parent))

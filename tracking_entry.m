@@ -19,6 +19,8 @@ for i=2:1:numFrame
         cellBlock{j}=cellBlock{j+1};
     end
     
+    disp(i)
+    
     str=sprintf('../data/%s/%s/%02d_SEG_DATA/data_%02d.mat',cellName,dataset,sq,i);
     S=load(str);
     cellBlock{seqLength}=S.segFrame;
