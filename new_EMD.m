@@ -1,10 +1,12 @@
-function [srcCellList,tarCellList]=new_EMD(cellBlock,frameID,motherMap,opt)        
+function cellBlock=new_EMD(cellBlock,frameID,opt)        
 % 
 % %%%%%%% parameters %%%%%%%
-opt.simpleMatchDist=5;
-opt.simpleMatchArea=10;
-opt.maxMigration=90;
-opt.AcceptRateThreshold=0.55;
+% opt.simpleMatchDist=5;
+% opt.simpleMatchArea=10;
+% opt.maxMigration=90;
+% opt.AcceptRateThreshold=0.55;
+
+
 % minValidFlow=3;
 % %halfROIs = algOptions.halfROIs;
 % BoundThreshold = algOptions.BoundThresh;
@@ -92,20 +94,12 @@ for j=1:1:tarNum
                 Mat(t,end-5:end-2)=cellBlock{t}{cellid}.props(:);
                 Mat(t,end-1:end)=c2(:);
                 
-                if(~isempty(cellBlock{t}{cellid}.parent))
-                    cellid=cellBlock{t}{cellid}.parent;
+                pid=cellBlock{t}{cellid}.parent;
+                if(numel(pid)>1), error('error in numebr of parents'); end
+                if(~isempty(pid)) 
+                    cellid=pid;
                 else
-                    pid=motherMap(cellBlock{t}{cellid}.id);
-                    if(t>1 && pid>0)
-                        for pt=1:1:numel(cellBlock{t-1})
-                            if(cellBlock{t-1}{pt}.id==pid)
-                                cellid=pt;
-                                break;
-                            end
-                        end
-                    else
-                        cellid=-1;
-                    end
+                    cellid=-1;
                 end
             else
                 Mat(t,:)=0;

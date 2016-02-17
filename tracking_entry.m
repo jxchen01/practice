@@ -5,6 +5,10 @@ sq=2;
 numFrame=92;
 seqLength=6;
 
+opt=struct('cellName',cellName,'dataset',dataset,'sq',sq,'numFrame',...
+    numFrame,'simpleMatchDist',5,'simpleMatchArea',10,...
+    'maxMigration',90,'AcceptRateThreshold',0.55);
+
 cellBlock=cell(1,seqLength);
 str=sprintf('../data/%s/%s/%02d_SEG_DATA/data_%02d.mat',cellName,dataset,sq,1);
 S=load(str);
@@ -25,9 +29,15 @@ for i=2:1:numFrame
     S=load(str);
     cellBlock{seqLength}=S.segFrame;
     
-    cellBlock = new_EMD(cellBlock,i);
+    %%%% load raw image %%%%
+    str=sprintf('../data/%s/%s/%02d/t%02d.tif',cellName,dataset,sq,i-1);
+    I=mat2gray(imread(str));
+    I=adapthisteq(I);
+    
+    cellBlock = new_EMD(cellBlock,i,opt);
 
-    [cellBlock{seqLength-1},cellBlock{seqLength}] = segUpdate(cellBlock{seqLength-1}, cellBlock{seqLength});
+    [cellBlock{seqLength-1},cellBlock{seqLength}] = segUpdate(cellBlock{seqLength-1},...
+        cellBlock{seqLength}, I,i);
 
     %%% save the tracking result %%%
     str=sprintf('../data/%s/%s/%02d_Track/track_%02d.mat',cellName,dataset,sq,i-1);
