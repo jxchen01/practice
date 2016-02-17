@@ -13,7 +13,8 @@ cellBlock=cell(1,seqLength);
 str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,1);
 S=load(str);
 cellBlock{seqLength}=S.segFrame0;
-for i=1:1:numel(cellBlock{seqLength})
+maxTrack=numel(cellBlock{seqLength});
+for i=1:1:maxTrack
     cellBlock{seqLength}{i}.id=i;
 end
 clear S
@@ -40,9 +41,9 @@ for i=2:1:numFrame
     cellBlock = new_EMD(cellBlock,i,opt);
 
     disp('start post processing')
-    [cellBlock{seqLength-1},cellBlock{seqLength}] = segUpdate(cellBlock{seqLength-1},...
-        cellBlock{seqLength}, I,i);
-
+    [cellBlock{seqLength-1},cellBlock{seqLength},maxTrack] = segUpdate(cellBlock{seqLength-1},...
+        cellBlock{seqLength}, I,i,maxTrack);
+    
     %%% save the tracking result %%%
     str=sprintf('../data/%s/%s/%02d_Track/track_%02d.mat',cellName,dataset,sq,i-1);
     cellFrame = cellBlock{seqLength-1};

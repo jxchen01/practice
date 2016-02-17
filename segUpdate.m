@@ -1,4 +1,4 @@
-function [srcList, tarList] = segUpdate(srcList, tarList,tarImg,frameIdx)
+function [srcList, tarList,maxTrack] = segUpdate(srcList, tarList,tarImg,frameIdx,maxTrack)
 
 patchSize=101; halfPatch=(patchSize-1)/2+1;
 overFeatSize=231;
@@ -159,10 +159,14 @@ for i=1:1:tarNum
     end
 end
 
+%%%% update id %%%%%%
 for i=1:1:tarNum
     pid=tarList{i}.parent;
     if(~isempty(pid))
         tarList{i}.id = srcList{pid}.id;
+    else
+        maxTrack=maxTrack+1;
+        tarList{i}.id = maxTrack;
     end
 end
 
