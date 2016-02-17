@@ -76,7 +76,7 @@ for j=1:1:tarNum
         counter=counter+1;
         costMatIdx(k,j)=counter; 
         
-        str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',opt.cellName,opt.dataset,opt.sq,frameID,j);
+        str=sprintf('../data/%s/%s/%02d_SEG_PATCH_OUT/%02d/%03d.tif.features',opt.cellName,opt.dataset,opt.sq,frameID,cellBlock{seqLength}{j}.patch);
         M=dlmread(str,'');
         Mat=zeros(seqLength,M(1,1)+5);
         Mat(seqLength,1:M(1,1))=M(2,1:M(1,1));
@@ -88,7 +88,7 @@ for j=1:1:tarNum
             if(cellid>0)
                 c2=cellBlock{t}{cellid}.Centroid;
                 
-                str=sprintf('../data/%s/%s/%02d_CELL_PATCH_OUT/%02d/%03d.tif.features',opt.cellName,opt.dataset,opt.sq,t-seqLength+frameID,cellid);
+                str=sprintf('../data/%s/%s/%02d_SEG_PATCH_OUT/%02d/%03d.tif.features',opt.cellName,opt.dataset,opt.sq,t-seqLength+frameID,cellBlock{t}{cellid}.patch);
                 M=dlmread(str,'');
                 Mat(t,1:M(1,1))=M(2,1:M(1,1));
                 Mat(t,end-5:end-2)=cellBlock{t}{cellid}.props(:);

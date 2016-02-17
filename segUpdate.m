@@ -18,6 +18,16 @@ dimx=sz(1); dimy=sz(2);
 
 tarNum=numel(tarList);
 numNewCell=0;
+
+%%%%% get the max patch id %%%%%
+maxID=0;
+for i=1:1:tarNum
+    if(tarList{i}.patch>maxID)
+        maxID=tarList{i}.patch;
+    end
+end
+
+
 for i=1:1:tarNum
     if(numel(tarList{i}.parent)>1)
         numCell = numel(tarList{i}.parent);
@@ -64,7 +74,7 @@ for i=1:1:tarNum
         
         numNewCell=numNewCell+1;
         rgb=cat(3,tmp,tmp,tmp);
-        str_patch=sprintf('%s/%03d.tif',str_seg_patch,tarNum+numNewCell);
+        str_patch=sprintf('%s/%03d.tif',str_seg_patch,maxID+numNewCell);
         imwrite(rgb,str_patch);
         
         %%%%%%%%%%%%%%%%%%%%%
@@ -78,7 +88,7 @@ for i=1:1:tarNum
         system(cm3);
         %%%%%%%%%%%%%%%%%%%%% 
         topo=[a.Area,a.MajorAxisLength,a.MinorAxisLength,a.Orientation];
-        tarList{i}=struct('seg',bw,'id',[],'patch',tarNum+numNewCell,'parent',[],...
+        tarList{i}=struct('seg',bw,'id',[],'patch',maxID+numNewCell,'parent',[],...
             'child',[],'Centroid',a.Centroid,'props',topo);
                
         idxMap=zeros(1,numCell);
@@ -109,7 +119,7 @@ for i=1:1:tarNum
             
             numNewCell=numNewCell+1;
             rgb=cat(3,tmp,tmp,tmp);
-            str_patch=sprintf('%s/%03d.tif',str_seg_patch,tarNum+numNewCell);
+            str_patch=sprintf('%s/%03d.tif',str_seg_patch,maxID+numNewCell);
             imwrite(rgb,str_patch);
             
             %%%%%%%%%%%%%%%%%%%%%
@@ -123,7 +133,7 @@ for i=1:1:tarNum
             system(cm3);
             %%%%%%%%%%%%%%%%%%%%%
             topo=[a.Area,a.MajorAxisLength,a.MinorAxisLength,a.Orientation];
-            tmpCell=struct('seg',bw,'id',[],'patch',tarNum+numNewCell,'parent',[],...
+            tmpCell=struct('seg',bw,'id',[],'patch',maxID+numNewCell,'parent',[],...
                 'child',[],'Centroid',a.Centroid,'props',topo);
             
             srcList = cat(srcList,2,tmpCell);
