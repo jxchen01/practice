@@ -84,6 +84,7 @@ for j=1:1:tarNum
         Mat(seqLength,end-5:end-2)=cellBlock{seqLength}{j}.props(:);
         Mat(seqLength,end-1:end)=c1(:);
         
+        cellid=k;
         for t=seqLength-1:-1:1
             if(cellid>0)
                 c2=cellBlock{t}{cellid}.Centroid;
