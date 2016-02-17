@@ -1,4 +1,4 @@
---lfs=require('lfs')
+lfs=require('lfs')
 
 cmd = torch.CmdLine()
 cmd:option('--name','frame_1', 'data file')
