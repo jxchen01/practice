@@ -6,6 +6,7 @@ function cellBlock=new_EMD(cellBlock,frameID,opt)
 % opt.maxMigration=90;
 % opt.AcceptRateThreshold=0.55;
 
+options = optimset('Display', 'off');
 
 % minValidFlow=3;
 % %halfROIs = algOptions.halfROIs;
