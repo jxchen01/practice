@@ -20,7 +20,6 @@ cmd:option('--rho', 6, 'back-propagate through time (BPTT) for rho time-steps')
 cmd:option('--frame',1,'frame being processed')
 
 -- file path
-cmd:option('--fpath','/home/jchen16/code/Tracking_System/code/train/seg/data/data_seg_1.t7','directory to data')
 cmd:option('--netpath','/home/jchen16/code/Tracking_System/code/checkpoint/seg/net_3650.000000.bin','directory to model')
 
 cmd:text()
@@ -32,7 +31,7 @@ if opt.cuda then
    cutorch.setDevice(opt.useDevice)
 end
 
-local f_data=opt.fpath
+local f_data=string.format('/home/jchen16/code/Tracking_System/code/RNN_data/frame_%d.t7',opt.frame)
 
 --[[Data]]--
 numPredict=5
@@ -94,6 +93,6 @@ while total<SEQS do
   collectgarbage()
 end
 
-outname=string.format('/home/jchen16/code/Tracking_System/code/RNN_result/results_%d,mat',opt.frame)
+outname=string.format('/home/jchen16/code/Tracking_System/code/RNN_result/results_%d.mat',opt.frame)
 matio.save(outname,results)
 
