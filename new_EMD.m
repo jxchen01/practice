@@ -59,7 +59,6 @@ fid=fopen(filename,'w');
 for j=1:1:tarNum
     c1=cellBlock{seqLength}{j}.Centroid;
     for k=1:1:srcNum
-
         c2=cellBlock{seqLength-1}{k}.Centroid;
         if(norm(c1-c2)>opt.maxMigration)
             continue;

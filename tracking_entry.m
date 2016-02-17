@@ -10,7 +10,7 @@ opt=struct('cellName',cellName,'dataset',dataset,'sq',sq,'numFrame',...
     'maxMigration',90,'AcceptRateThreshold',0.55);
 
 cellBlock=cell(1,seqLength);
-str=sprintf('../data/%s/%s/%02d_SEG_DATA/data_%02d.mat',cellName,dataset,sq,1);
+str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,1);
 S=load(str);
 cellBlock{seqLength}=S.segFrame;
 for i=1:1:numel(cellBlock{seqLength})
