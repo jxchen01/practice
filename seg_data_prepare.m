@@ -1,4 +1,5 @@
 probPath='/home/jchen16/u-net-compiled/HeLa/02_RES/35000';
+rescaleSize=0.5;
 cellName='N2DL-HeLa';
 dataset='train';
 sq=2;
@@ -44,14 +45,16 @@ for i=1:1:numFrame
     str=sprintf('%s/prob_%d.tif',probPath,i);
     bw=mat2gray(imread(str));
     bw=im2bw(bw,graythresh(bw));
+    bw=imresize(bw,rescaleSize);
     bw=imfill(bw,'holes');
 
     %%% loop through each region %%% 
     cc=bwconncomp(bw);
     labmat = labelmatrix(cc);
     segFrame=cell(1,0);
-    
-    for k=1:1:cc.NumObjects      
+    stat=regionprops(cc,'Centroid','Area','MajorAxisLength','MinorAxisLength','Orientation');
+    numRegion = cc.NumObjects;
+    for k=1:1:numRegion   
         sc=ismember(labmat,k);
         
         %%%% totally within the boundary mask %%%%
@@ -64,8 +67,7 @@ for i=1:1:numFrame
         im_region = I_original;
         mask = imdilate(sc,se);
         im_region(~mask)=0;
-        a = regionprops(sc,'Centroid','Area','MajorAxisLength','MinorAxisLength','Orientation');
-        x0=round(a.Centroid(2));y0=round(a.Centroid(1));
+        x0=round(stat(k).Centroid(2));y0=round(stat(k).Centroid(1));
         
 %         %%% create image patch %%%
 %         tmp=zeros(patchSize,patchSize);
@@ -80,9 +82,10 @@ for i=1:1:numFrame
 %         str=sprintf('%s/%03d.tif',str2,SegPatchIdx);
 %         imwrite(rgb,str);
         
-        topo=[a.Area,a.MajorAxisLength,a.MinorAxisLength,a.Orientation];
+        topo=[stat(k).Area,stat(k).MajorAxisLength,stat(k).MinorAxisLength,stat(k).Orientation];
+        
         tmpCell=struct('seg',sc,'id',[],'patch',SegPatchIdx,'parent',[],...
-            'child',[],'Centroid',a.Centroid,'props',topo);
+            'child',[],'Centroid',stat(k).Centroid,'props',topo);
         segFrame = cat(2,segFrame,tmpCell);
         clear tmpCell
     end

@@ -25,9 +25,11 @@ for i=2:1:numFrame
     
     disp(i)
     
-    str=sprintf('../data/%s/%s/%02d_SEG_DATA/data_%02d.mat',cellName,dataset,sq,i);
+    %str=sprintf('../data/%s/%s/%02d_SEG_DATA/data_%02d.mat',cellName,dataset,sq,i);
+    str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,i);
     S=load(str);
-    cellBlock{seqLength}=S.segFrame;
+    cellBlock{seqLength}=S.segFrame0;
+    clear S
     
     %%%% load raw image %%%%
     str=sprintf('../data/%s/%s/%02d/t%02d.tif',cellName,dataset,sq,i-1);
