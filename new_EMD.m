@@ -121,10 +121,18 @@ fclose(fid);
 disp('invoking Torch for ENN')
 %%%% invoke RNN %%%%
 cm1=sprintf('th convert_frame.lua --name ''frame_%d''',frameID);
-system(cm1)
+status=system(cm1);
+if(status)
+    disp(cm1)
+    error('error in system operation');
+end
 RNN_name=['frame_',num2str(frameID),'.t7'];
 cmm=['th RNN_track.lua --useDevice 2 --fpath %s ',RNN_name];
-system(cmm)
+status=system(cmm);
+if(status)
+    disp(cmm)
+    error('error in system operation');
+end
 
 disp('Torch is done')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
