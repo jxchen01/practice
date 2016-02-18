@@ -165,6 +165,7 @@ vMat(:,end)=1;
 vMat(end,:)=1;
 vMat(end,end)=0;
 
+keyboard
 % %%% toy example %%%%
 % srcNum=3; tarNum=3;
 % costMat = [0.1, 0.6, 0.9, 0.85;
