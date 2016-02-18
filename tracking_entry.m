@@ -7,7 +7,7 @@ seqLength=6;
 
 opt=struct('cellName',cellName,'dataset',dataset,'sq',sq,'numFrame',...
     numFrame,'simpleMatchDist',5,'simpleMatchArea',10,...
-    'maxMigration',90,'AcceptRateThreshold',0.55);
+    'maxMigration',60,'AcceptRateThreshold',0.55);
 
 cellBlock=cell(1,seqLength);
 str=sprintf('../data/%s/%s/%02d_CELL/data_%02d.mat',cellName,dataset,sq,1);

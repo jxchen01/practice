@@ -5,28 +5,12 @@ function cellBlock=new_EMD(cellBlock,frameID,opt)
 % opt.simpleMatchArea=10;
 % opt.maxMigration=90;
 % opt.AcceptRateThreshold=0.55;
-
 options = optimset('Display', 'off');
-
-% minValidFlow=3;
-% %halfROIs = algOptions.halfROIs;
-% BoundThreshold = algOptions.BoundThresh;
-% candiRadius=algOptions.candiRadius;
-% bodyRatio=algOptions.bodyRatio;
-
 % 
 % % initialization
 seqLength=numel(cellBlock);
 srcNum = length(cellBlock{seqLength-1});
 tarNum = length(cellBlock{seqLength});
-
-% 
-% imgSize = size(srcMat);
-% dimx=imgSize(1);dimy=imgSize(2);
-% 
-% if(size(srcMat)~=size(tarMat))
-%     error('error in local EMD');
-% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%% compute the distance between signitures %%%%%%%%%%%%%
@@ -48,7 +32,6 @@ tarNum = length(cellBlock{seqLength});
 % end
 
 % compute matching cost and scaling parameters
-
 costMat=zeros(srcNum+1,tarNum+1);
 uMat=zeros(srcNum+1,tarNum+1);
 vMat=zeros(srcNum+1,tarNum+1);
@@ -59,24 +42,31 @@ filename=['./RNN_data/frame_',num2str(frameID),'.csv'];
 fid=fopen(filename,'w');
 for j=1:1:tarNum
     c1=cellBlock{seqLength}{j}.Centroid;
-    for k=1:1:srcNum
-        c2=cellBlock{seqLength-1}{k}.Centroid;
-        if(norm(c1-c2)>opt.maxMigration)
-            costMat(k,j)=-1;
+    for i=1:1:srcNum
+        c2=cellBlock{seqLength-1}{i}.Centroid;
+        
+        %%%% no need to check %%%%
+        if(costMat(i,j)<0)
+            continue;
+        end
+        
+        if(norm(c1-c2)>opt.maxMigration) %%% not a candidate
+            costMat(i,j)=-1;
             continue;
         elseif(norm(c1-c2)<opt.simpleMatchDist && abs(cellBlock{seqLength}{j}.props(1)...
-                -cellBlock{seqLength-1}{k}.props(1))<opt.simpleMatchArea)
-            cellBlock{seqLength-1}{k}.child = j;
-            cellBlock{seqLength}{j}.parent = k;
-            costMat(k,:)=-1;
+                -cellBlock{seqLength-1}{i}.props(1))<opt.simpleMatchArea) %%%% simple match
+            cellBlock{seqLength-1}{i}.child = j;
+            cellBlock{seqLength}{j}.parent = i;
+            costMat(i,:)=-1;
             costMat(:,j)=-1;
-            uMat(k,:)=0; vMat(k,:)=0;
+            uMat(i,:)=0; vMat(i,:)=0;
             uMat(:,j)=0; vMat(:,j)=0;
             continue;
         end
         
+        %%%% determine the parameters using RNN
         counter=counter+1;
-        costMatIdx(k,j)=counter; 
+        costMatIdx(i,j)=counter; 
         
         str=sprintf('../data/%s/%s/%02d_SEG_PATCH_OUT/%02d/%03d.tif.features',opt.cellName,opt.dataset,opt.sq,frameID,cellBlock{seqLength}{j}.patch);
         M=dlmread(str,'');
@@ -85,7 +75,7 @@ for j=1:1:tarNum
         Mat(seqLength,end-5:end-2)=cellBlock{seqLength}{j}.props(:);
         Mat(seqLength,end-1:end)=c1(:);
         
-        cellid=k;
+        cellid=i;
         for t=seqLength-1:-1:1
             if(cellid>0)
                 c2=cellBlock{t}{cellid}.Centroid;
