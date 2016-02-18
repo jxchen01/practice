@@ -79,6 +79,9 @@ while total<SEQS do
   local outputs=lm:forward(inputs)
   local foutput=outputs:float()
 
+  print(foutput)
+  sys.sleep(2)
+
   for tt=1,opt.batchSize do
     for p=1,numPredict do
       results[offsets[tt]][p]=foutput[tt][p]
