@@ -20,7 +20,7 @@ cmd:option('--rho', 6, 'back-propagate through time (BPTT) for rho time-steps')
 cmd:option('--frame',1,'frame being processed')
 
 -- file path
-cmd:option('--netpath','/home/jchen16/code/Tracking_System/code/checkpoint/seg/net_3650.000000.bin','directory to model')
+cmd:option('--netpath','/home/jchen16/code/Tracking_System/code/checkpoint/seg/net_10000.000000.bin','directory to model')
 
 cmd:text()
 opt = cmd:parse(arg or {})
@@ -78,9 +78,6 @@ while total<SEQS do
 
   local outputs=lm:forward(inputs)
   local foutput=outputs:float()
-
-  print(foutput)
-  sys.sleep(2)
 
   for tt=1,opt.batchSize do
     for p=1,numPredict do
