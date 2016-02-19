@@ -11,8 +11,8 @@ cmd:text('Train a RNN Model on sample dataset using LSTM or GRU to compute state
 cmd:text('Example:')
 cmd:text("my-code.lua --cuda --useDevice 2 --progress --zeroFirst --cutoffNorm 4 --rho 10")
 cmd:text('Options:')
-cmd:option('--lr', 0.001, 'learning rate at t=0')
-cmd:option('--minLR', 0.00001, 'minimum learning rate')
+cmd:option('--lr', 0.0001, 'learning rate at t=0')
+cmd:option('--minLR', 0.000001, 'minimum learning rate')
 cmd:option('--saturateEpoch', 400, 'epoch at which linear decayed LR will reach minLR')
 cmd:option('--momentum', 0.99, 'momentum')
 cmd:option('--maxOutNorm', -1, 'max l2-norm of each layer\'s output neuron weights')
@@ -182,6 +182,8 @@ for k=1, opt.nIteration do
     	local err = criterion:forward(outputs,targets)
 
       print('Iter: '.. k .. '  Inner: '.. innerK.. ' Err: '.. err)
+      print(outputs:float())
+      print(targets:float())
         
     	lm:zeroGradParameters()
 
