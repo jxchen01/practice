@@ -182,8 +182,8 @@ for k=1, opt.nIteration do
     	local err = criterion:forward(outputs,targets)
 
       print('Iter: '.. k .. '  Inner: '.. innerK.. ' Err: '.. err)
-      print(outputs:float())
-      print(targets:float())
+      print(outputs[,2]
+      print(targets[,2]
         
     	lm:zeroGradParameters()
 
