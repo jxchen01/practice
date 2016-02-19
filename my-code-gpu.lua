@@ -179,7 +179,7 @@ for k=1, opt.nIteration do
 
     	local outputs = lm:forward(inputs)    
 
-    	local err = criterion:forward(outputs:float(),targets:float())
+    	local err = criterion:forward(outputs,targets)
 
       print('Iter: '.. k .. '  Inner: '.. innerK.. ' Err: '.. err)
         
